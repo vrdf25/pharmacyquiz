@@ -925,6 +925,7 @@
     </div>
     <div style="display:flex; align-items:center; gap:12px;">
       <div class="ujian-timer" id="ujian-timer">--:--</div>
+      <button onclick="confirmSelesai()" style="background:#c0392b; color:#fff; border:none; border-radius:8px; padding:8px 14px; font-family:inherit; font-size:13px; font-weight:700; cursor:pointer;">Selesai</button>
     </div>
   </div>
 
@@ -956,6 +957,19 @@
   <div class="locked-title" id="locked-title">Ujian Dikunci</div>
   <div class="locked-desc" id="locked-desc">Kamu telah melebihi batas pelanggaran.</div>
   <div style="color:rgba(255,255,255,0.4); font-size:12px; margin-top:16px;">Hubungi dosen untuk informasi lebih lanjut.</div>
+  <button id="btn-tutup-ujian" class="btn btn-outline" style="display:none; margin-top:20px; color:#fff; border-color:rgba(255,255,255,0.3);" onclick="tutupUjian()">Tutup Halaman</button>
+</div>
+
+<!-- Modal konfirmasi selesai -->
+<div class="modal-bg" id="modal-selesai">
+  <div class="modal">
+    <div class="modal-title">✅ Selesaikan Ujian?</div>
+    <p class="text-sm text-muted">Pastikan kamu sudah mengisi semua jawaban di Google Form sebelum keluar.</p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="batalSelesai()">Kembali</button>
+      <button class="btn btn-success" onclick="selesaiUjian()">Ya, Selesai</button>
+    </div>
+  </div>
 </div>
 
 <!-- Modal konfirmasi hentikan ujian -->
@@ -966,6 +980,19 @@
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeModal('modal-hentikan')">Batal</button>
       <button class="btn btn-danger" onclick="hentikanUjian()">Ya, Hentikan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal konfirmasi selesai (mahasiswa) -->
+<div class="modal-bg" id="modal-selesai">
+  <div class="modal">
+    <div class="modal-title">✅ Selesai Mengerjakan?</div>
+    <p class="text-sm text-muted" style="margin-bottom:8px;">Pastikan kamu sudah menekan tombol <strong>Submit</strong> di Google Form sebelum keluar.</p>
+    <p class="text-sm text-muted">Setelah keluar, kamu <strong>tidak bisa kembali</strong> ke halaman ujian.</p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-selesai')">Kembali ke Ujian</button>
+      <button class="btn btn-success" onclick="selesaiUjian()">Ya, Saya Sudah Submit</button>
     </div>
   </div>
 </div>
@@ -1430,75 +1457,85 @@ function updateTimerDisplay() {
 
 // ==================== VIOLATION DETECTION ====================
 let violationCooldown = false;
+let ujianStarted = false; // flag: deteksi baru aktif setelah benar-benar masuk ujian
+let fullscreenViolationCooldown = false;
 
 function setupViolationDetection() {
-  // Tab visibility change
-  document.addEventListener('visibilitychange', onVisibilityChange);
+  // Beri jeda 4 detik sebelum deteksi aktif
+  // agar animasi masuk / fullscreen request tidak dianggap pelanggaran
+  setTimeout(() => {
+    ujianStarted = true;
 
-  // Window blur (alt+tab, etc)
-  window.addEventListener('blur', onWindowBlur);
+    // Visibility change: pindah tab / home button
+    document.addEventListener('visibilitychange', onVisibilityChange);
 
-  // Fullscreen change
-  document.addEventListener('fullscreenchange', onFullscreenChange);
-  document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+    // Fullscreen change — dengan cooldown khusus
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', onFullscreenChange);
 
-  // Window resize (split screen)
-  window.addEventListener('resize', onWindowResize);
+    // Resize / split screen — hanya deteksi perubahan besar
+    lastWidth = window.innerWidth;
+    lastHeight = window.innerHeight;
+    window.addEventListener('resize', onWindowResize);
 
-  // Right click disabled
-  document.addEventListener('contextmenu', e => e.preventDefault());
+    // Keyboard
+    document.addEventListener('keydown', onKeyDown);
 
-  // Keyboard shortcuts
-  document.addEventListener('keydown', onKeyDown);
+    // Right click
+    document.addEventListener('contextmenu', e => e.preventDefault());
+
+  }, 4000);
 }
 
 function onVisibilityChange() {
-  if (document.hidden && !mhsSession.locked) {
+  if (!ujianStarted || mhsSession.locked) return;
+  if (document.hidden) {
     triggerViolation('Pindah Tab / Keluar Halaman');
   }
 }
 
-function onWindowBlur() {
-  if (!mhsSession.locked) {
-    triggerViolation('Keluar dari Jendela Ujian');
-  }
-}
-
 function onFullscreenChange() {
+  if (!ujianStarted || mhsSession.locked) return;
   const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
   const bar = document.getElementById('fullscreen-bar');
-  if (!isFullscreen && !mhsSession.locked) {
+  if (!isFullscreen) {
     bar.style.display = 'flex';
-    triggerViolation('Keluar dari Mode Layar Penuh');
+    // Cooldown khusus fullscreen 5 detik agar tap notifikasi tidak double-count
+    if (!fullscreenViolationCooldown) {
+      fullscreenViolationCooldown = true;
+      setTimeout(() => { fullscreenViolationCooldown = false; }, 5000);
+      triggerViolation('Keluar dari Mode Layar Penuh');
+    }
   } else {
     bar.style.display = 'none';
   }
 }
 
 let lastWidth = window.innerWidth;
+let lastHeight = window.innerHeight;
 function onWindowResize() {
+  if (!ujianStarted || mhsSession.locked) return;
   const currentWidth = window.innerWidth;
-  if (Math.abs(currentWidth - lastWidth) > 100 && !mhsSession.locked) {
-    lastWidth = currentWidth;
-    triggerViolation('Resize / Split Screen Terdeteksi');
+  const currentHeight = window.innerHeight;
+  // Hanya anggap pelanggaran kalau lebar berkurang > 150px (split screen nyata)
+  if ((lastWidth - currentWidth) > 150) {
+    triggerViolation('Split Screen Terdeteksi');
   }
+  lastWidth = currentWidth;
+  lastHeight = currentHeight;
 }
 
 function onKeyDown(e) {
-  // Block PrintScreen
   if (e.key === 'PrintScreen') {
     e.preventDefault();
     triggerViolation('Screenshot (PrintScreen) Terdeteksi');
   }
-  // Block common shortcuts
   if (e.ctrlKey && ['c','v','a','p','s','u'].includes(e.key.toLowerCase())) {
     e.preventDefault();
   }
-  // Block F12, etc
   if (['F12','F11'].includes(e.key)) {
     e.preventDefault();
   }
-  // Block Escape (keluar fullscreen)
   if (e.key === 'Escape') {
     e.preventDefault();
   }
@@ -1542,13 +1579,49 @@ function triggerViolation(tipe) {
   document.getElementById('violation-overlay').classList.add('show');
 }
 
+function confirmSelesai() {
+  ujianStarted = false; // pause deteksi saat modal muncul
+  document.getElementById('modal-selesai').classList.add('show');
+}
+
+function batalSelesai() {
+  closeModal('modal-selesai');
+  ujianStarted = true;
+  enterFullscreen();
+}
+
+function selesaiUjian() {
+  mhsSession.locked = true;
+  ujianStarted = false;
+  clearInterval(mhsSession.timerInterval);
+  document.removeEventListener('visibilitychange', onVisibilityChange);
+  window.removeEventListener('resize', onWindowResize);
+
+  if (state.peserta[mhsSession.nim]) {
+    state.peserta[mhsSession.nim].status = 'selesai';
+    saveState();
+  }
+
+  closeModal('modal-selesai');
+
+  if (document.exitFullscreen) document.exitFullscreen();
+  else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+
+  document.getElementById('locked-title').textContent = '✅ Ujian Selesai';
+  document.getElementById('locked-desc').textContent = 'Terima kasih! Jawaban kamu sudah tersimpan di Google Form.';
+  document.getElementById('locked-overlay').classList.add('show');
+  document.getElementById('btn-tutup-ujian').style.display = 'inline-flex';
+}
+
 function dismissViolation() {
   document.getElementById('violation-overlay').classList.remove('show');
+  ujianStarted = true;
   enterFullscreen();
 }
 
 function lockUjian(alasan, desc) {
   mhsSession.locked = true;
+  ujianStarted = false;
   clearInterval(mhsSession.timerInterval);
 
   document.getElementById('violation-overlay').classList.remove('show');
@@ -1557,10 +1630,9 @@ function lockUjian(alasan, desc) {
   document.getElementById('locked-title').textContent = title;
   document.getElementById('locked-desc').textContent = desc || '';
   document.getElementById('locked-overlay').classList.add('show');
+  document.getElementById('btn-tutup-ujian').style.display = 'none';
 
-  // Remove event listeners
   document.removeEventListener('visibilitychange', onVisibilityChange);
-  window.removeEventListener('blur', onWindowBlur);
   window.removeEventListener('resize', onWindowResize);
 }
 
@@ -1569,6 +1641,11 @@ function enterFullscreen() {
   const el = document.documentElement;
   if (el.requestFullscreen) el.requestFullscreen();
   else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+}
+
+function tutupUjian() {
+  // Kembali ke halaman login
+  window.location.href = window.location.href.split('?')[0];
 }
 
 // ==================== WEBHOOK ====================

@@ -2,8 +2,8 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>SiUJIAN — Sistem Ujian Online</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>QuizRx — Secure Exam</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
 
@@ -20,7 +20,6 @@
     --text: #1a2332;
     --text-muted: #6b7a90;
     --radius: 12px;
-    --shadow: 0 2px 12px rgba(0,0,0,0.08);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -32,78 +31,33 @@
     min-height: 100vh;
     -webkit-user-select: none;
     user-select: none;
+    overflow: hidden;
   }
 
-  /* ===== SCREENS ===== */
+  /* Proteksi Tambahan Screenshot (Blackout saat focus hilang) */
+  @media print { body { display: none; } }
+
   .screen { display: none; min-height: 100vh; }
   .screen.active { display: flex; }
 
   /* ===== LOGIN SCREEN ===== */
   #screen-login {
-    background: linear-gradient(135deg, #0f2544 0%, #1a3a5c 50%, #2563a8 100%);
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    flex-direction: column;
+    background: linear-gradient(135deg, #0f2544 0%, #1a3a5c 100%);
+    align-items: center; justify-content: center; padding: 20px; flex-direction: column;
   }
 
-  .login-logo {
-    text-align: center;
-    margin-bottom: 32px;
-  }
-
-  .login-logo .brand {
-    font-size: 36px;
-    font-weight: 700;
-    color: #fff;
-    letter-spacing: -1px;
-  }
-
-  .login-logo .brand span { color: #f0a052; }
-
-  .login-logo .tagline {
-    font-size: 13px;
-    color: rgba(255,255,255,0.6);
-    margin-top: 4px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-
-  .login-tabs {
-    display: flex;
-    background: rgba(255,255,255,0.1);
-    border-radius: 10px;
-    padding: 4px;
-    margin-bottom: 24px;
-    width: 100%;
-    max-width: 400px;
-  }
-
-  .login-tab {
-    flex: 1;
-    padding: 10px;
-    text-align: center;
-    border-radius: 7px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    color: rgba(255,255,255,0.6);
-    transition: all 0.2s;
+  .admin-trigger {
+    position: absolute; top: 20px; right: 20px;
+    color: rgba(255,255,255,0.4); font-size: 12px; cursor: pointer;
+    background: rgba(255,255,255,0.1); padding: 5px 10px; border-radius: 20px;
     border: none;
-    background: none;
   }
 
-  .login-tab.active {
-    background: #fff;
-    color: var(--primary);
-  }
+  .brand { font-size: 42px; font-weight: 800; color: #fff; letter-spacing: -1.5px; margin-bottom: 30px; }
+  .brand span { color: #f0a052; }
 
   .login-form-wrap {
-    background: #fff;
-    border-radius: 16px;
-    padding: 32px;
-    width: 100%;
-    max-width: 400px;
+    background: #fff; border-radius: 16px; padding: 32px; width: 100%; max-width: 380px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.3);
   }
 
@@ -111,1686 +65,237 @@
   .login-form.active { display: block; }
 
   .form-group { margin-bottom: 18px; }
+  label { display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
 
-  label {
-    display: block;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-muted);
-    margin-bottom: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  input[type="text"], input[type="password"], input[type="number"], input[type="url"], select, textarea {
-    width: 100%;
-    padding: 12px 14px;
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    font-size: 15px;
-    font-family: inherit;
-    color: var(--text);
-    background: var(--bg);
-    transition: border-color 0.2s;
-    outline: none;
-  }
-
-  input:focus, select:focus, textarea:focus {
-    border-color: var(--primary-light);
-    background: #fff;
+  input {
+    width: 100%; padding: 14px; border: 1.5px solid var(--border); border-radius: 10px;
+    font-size: 15px; background: var(--bg); outline: none;
   }
 
   .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 12px 20px;
-    border-radius: 8px;
-    border: none;
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-decoration: none;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 14px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; width: 100%;
   }
 
-  .btn-primary {
-    background: var(--primary);
-    color: #fff;
-    width: 100%;
-  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-danger { background: var(--danger); color: #fff; }
 
-  .btn-primary:hover { background: var(--primary-light); }
+  /* ===== UJIAN SCREEN ===== */
+  #screen-ujian { flex-direction: column; background: #000; position: fixed; inset: 0; z-index: 9999; }
+  .ujian-topbar { background: #0f2040; height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; }
+  .iframe-container { flex: 1; background: #fff; -webkit-overflow-scrolling: touch; overflow-y: scroll; }
+  #exam-iframe { width: 100%; height: 100%; border: none; }
 
-  .btn-accent {
-    background: var(--accent);
-    color: #fff;
-  }
+  .timer-box { font-family: 'JetBrains Mono'; font-weight: 700; color: #f0a052; font-size: 18px; }
 
-  .btn-accent:hover { opacity: 0.9; }
-
-  .btn-danger {
-    background: var(--danger);
-    color: #fff;
-  }
-
-  .btn-success {
-    background: var(--success);
-    color: #fff;
-  }
-
-  .btn-outline {
-    background: transparent;
-    border: 1.5px solid var(--border);
-    color: var(--text);
-  }
-
-  .btn-outline:hover { background: var(--bg); }
-
-  .btn-sm { padding: 8px 14px; font-size: 13px; }
-
-  /* ===== DOSEN SCREEN ===== */
-  #screen-dosen {
-    flex-direction: column;
-    background: var(--bg);
-  }
-
-  .topbar {
-    background: var(--primary);
-    color: #fff;
-    padding: 0 20px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-
-  .topbar-brand { font-size: 18px; font-weight: 700; }
-  .topbar-brand span { color: #f0a052; }
-
-  .topbar-user {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 13px;
-  }
-
-  .avatar {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 13px;
-  }
-
-  .dosen-content {
-    padding: 24px 20px;
-    max-width: 800px;
-    margin: 0 auto;
-    width: 100%;
-  }
-
-  .nav-tabs {
-    display: flex;
-    gap: 4px;
-    background: var(--surface);
-    padding: 4px;
-    border-radius: var(--radius);
-    margin-bottom: 24px;
-    border: 1px solid var(--border);
-    overflow-x: auto;
-  }
-
-  .nav-tab {
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: none;
-    background: none;
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-muted);
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.2s;
-  }
-
-  .nav-tab.active {
-    background: var(--primary);
-    color: #fff;
-  }
-
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
-
-  .card {
-    background: var(--surface);
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-    padding: 24px;
-    margin-bottom: 16px;
-  }
-
-  .card-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 20px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
-
-  @media (max-width: 500px) {
-    .form-row { grid-template-columns: 1fr; }
-  }
-
-  /* Kode Ujian Display */
-  .kode-display {
-    background: var(--primary);
-    color: #fff;
-    border-radius: var(--radius);
-    padding: 20px;
-    text-align: center;
-    margin-bottom: 16px;
-  }
-
-  .kode-display .kode-label {
-    font-size: 12px;
-    opacity: 0.7;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 8px;
-  }
-
-  .kode-display .kode-value {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 32px;
-    font-weight: 700;
-    letter-spacing: 4px;
-    color: #f0a052;
-  }
-
-  /* Status badges */
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-  }
-
-  .badge-active { background: #d1fae5; color: #065f46; }
-  .badge-inactive { background: #fee2e2; color: #7f1d1d; }
-  .badge-warning { background: #fef3c7; color: #78350f; }
-
-  /* Mahasiswa list */
-  .mhs-list { display: flex; flex-direction: column; gap: 8px; }
-
-  .mhs-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 16px;
-    background: var(--bg);
-    border-radius: 8px;
-    border: 1px solid var(--border);
-  }
-
-  .mhs-info { flex: 1; }
-  .mhs-nim { font-size: 13px; font-weight: 700; color: var(--primary); }
-  .mhs-status { font-size: 12px; color: var(--text-muted); }
-
-  .mhs-violations {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .violation-count {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--danger);
-  }
-
-  /* Alert */
-  .alert {
-    padding: 12px 16px;
-    border-radius: 8px;
-    font-size: 14px;
-    margin-bottom: 16px;
-    border-left: 4px solid;
-  }
-
-  .alert-danger { background: #fee2e2; border-color: var(--danger); color: #7f1d1d; }
-  .alert-success { background: #d1fae5; border-color: var(--success); color: #065f46; }
-  .alert-warning { background: #fef3c7; border-color: var(--warning); color: #78350f; }
-  .alert-info { background: #dbeafe; border-color: var(--primary-light); color: #1e3a5f; }
-
-  /* ===== UJIAN SCREEN (MAHASISWA) ===== */
-  #screen-ujian {
-    flex-direction: column;
-    background: #0a1628;
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    z-index: 9999;
-  }
-
-  .ujian-topbar {
-    background: #0f2040;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    padding: 0 16px;
-    height: 56px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-shrink: 0;
-  }
-
-  .ujian-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .ujian-nim {
-    font-size: 13px;
-    font-weight: 700;
-    color: rgba(255,255,255,0.9);
-    font-family: 'JetBrains Mono', monospace;
-  }
-
-  .ujian-timer {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 18px;
-    font-weight: 700;
-    padding: 6px 14px;
-    border-radius: 8px;
-    background: rgba(255,255,255,0.1);
-    color: #fff;
-    transition: background 0.3s;
-  }
-
-  .ujian-timer.warning { background: rgba(231,76,60,0.3); color: #ff6b6b; }
-  .ujian-timer.danger { background: rgba(231,76,60,0.6); color: #fff; animation: pulse 1s infinite; }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.6; }
-  }
-
-  .violation-bar {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: rgba(255,255,255,0.6);
-  }
-
-  .violation-dots {
-    display: flex;
-    gap: 4px;
-  }
-
-  .vdot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.2);
-    transition: background 0.3s;
-  }
-
-  .vdot.filled { background: var(--danger); }
-
-  .iframe-container {
-    flex: 1;
-    position: relative;
-    overflow: hidden;
-  }
-
-  #exam-iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-    display: block;
-  }
-
-  /* Watermark */
-  .watermark {
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    pointer-events: none;
-    z-index: 10;
-    overflow: hidden;
-  }
-
-  .watermark-text {
-    position: absolute;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 14px;
-    font-weight: 600;
-    color: rgba(100, 150, 200, 0.15);
-    white-space: nowrap;
-    transform: rotate(-30deg);
-    user-select: none;
-  }
-
-  /* Violation overlay */
-  .violation-overlay {
-    display: none;
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.85);
-    z-index: 99999;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 16px;
-    text-align: center;
-    padding: 20px;
-  }
-
-  .violation-overlay.show { display: flex; }
-
-  .violation-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: rgba(192,57,43,0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 32px;
-  }
-
-  .violation-title {
-    font-size: 22px;
-    font-weight: 700;
-    color: #fff;
-  }
-
-  .violation-desc {
-    font-size: 14px;
-    color: rgba(255,255,255,0.7);
-    max-width: 320px;
-  }
-
-  /* Locked overlay */
-  .locked-overlay {
-    display: none;
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: #0a1628;
-    z-index: 99999;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 16px;
-    text-align: center;
-    padding: 20px;
-  }
-
-  .locked-overlay.show { display: flex; }
-
-  .locked-icon { font-size: 64px; }
-  .locked-title { font-size: 24px; font-weight: 700; color: #fff; }
-  .locked-desc { font-size: 14px; color: rgba(255,255,255,0.6); max-width: 300px; }
-
-  /* Modal */
+  /* MODAL */
   .modal-bg {
-    display: none;
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+    align-items: center; justify-content: center; z-index: 10000; padding: 20px;
   }
-
   .modal-bg.show { display: flex; }
+  .modal { background: #fff; padding: 25px; border-radius: 15px; width: 100%; max-width: 320px; text-align: center; }
 
-  .modal {
-    background: var(--surface);
-    border-radius: 16px;
-    padding: 28px;
-    width: 100%;
-    max-width: 440px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  /* Error Device */
+  #mobile-error {
+    display: none; position: fixed; inset: 0; background: #fff; z-index: 99999;
+    flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;
   }
-
-  .modal-title {
-    font-size: 18px;
-    font-weight: 700;
-    margin-bottom: 20px;
-    color: var(--text);
-  }
-
-  .modal-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-  }
-
-  .modal-actions .btn { flex: 1; }
-
-  /* Helper */
-  .text-sm { font-size: 13px; }
-  .text-muted { color: var(--text-muted); }
-  .mt-8 { margin-top: 8px; }
-  .mt-16 { margin-top: 16px; }
-  .mb-16 { margin-bottom: 16px; }
-  .flex { display: flex; }
-  .items-center { align-items: center; }
-  .justify-between { justify-content: space-between; }
-  .gap-8 { gap: 8px; }
-  .gap-12 { gap: 12px; }
-  .w-full { width: 100%; }
-
-  /* Stats row */
-  .stats-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-
-  .stat-card {
-    background: var(--bg);
-    border-radius: 8px;
-    padding: 14px;
-    text-align: center;
-    border: 1px solid var(--border);
-  }
-
-  .stat-value {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--primary);
-  }
-
-  .stat-label {
-    font-size: 11px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-top: 2px;
-  }
-
-  .empty-state {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--text-muted);
-  }
-
-  .empty-icon { font-size: 40px; margin-bottom: 12px; }
-  .empty-text { font-size: 14px; }
-
-  .ujian-active-banner {
-    background: linear-gradient(135deg, #1a7a4a, #27ae60);
-    color: #fff;
-    padding: 12px 16px;
-    border-radius: var(--radius);
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-  }
-
-  .pulse-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: #fff;
-    animation: pulse 1.5s infinite;
-    flex-shrink: 0;
-  }
-
-  .fullscreen-reminder {
-    background: rgba(255,255,255,0.1);
-    border-radius: 8px;
-    padding: 12px 16px;
-    color: rgba(255,255,255,0.9);
-    font-size: 13px;
-    text-align: center;
-    margin-top: auto;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-  }
-
-  #btn-go-fullscreen {
-    background: #fff;
-    color: var(--primary);
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-  }
-
-  /* Screen login mahasiswa */
-  #screen-mhs-login {
-    background: linear-gradient(135deg, #0f2544 0%, #1a3a5c 100%);
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    flex-direction: column;
-  }
-
 </style>
 </head>
 <body>
 
-<!-- ==================== SCREEN: LOGIN ==================== -->
-<div id="screen-login" class="screen active">
-  <div class="login-logo">
-    <div class="brand">Si<span>UJIAN</span></div>
-    <div class="tagline">Sistem Ujian Online Aman</div>
-  </div>
+<div id="mobile-error">
+    <h1 style="color: var(--danger)">⚠️ Akses Ditolak</h1>
+    <p>Demi keamanan, ujian ini <b>hanya bisa dibuka melalui Smartphone (HP)</b>. Laptop/Tablet tidak diperbolehkan.</p>
+</div>
 
-  <div class="login-tabs">
-    <button class="login-tab active" onclick="switchLoginTab('dosen')">👨‍🏫 Dosen</button>
-    <button class="login-tab" onclick="switchLoginTab('mahasiswa')">🎓 Mahasiswa</button>
-  </div>
+<button class="admin-trigger" onclick="switchLoginTab('dosen')">Mode Dosen</button>
+
+<div id="screen-login" class="screen active">
+  <div class="brand">Quiz<span>Rx</span></div>
 
   <div class="login-form-wrap">
-    <!-- Form Dosen -->
-    <div id="form-dosen" class="login-form active">
+    <div id="form-mahasiswa" class="login-form active">
       <div class="form-group">
-        <label>Username</label>
-        <input type="text" id="dosen-username" placeholder="Masukkan username" autocomplete="off">
-      </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" id="dosen-password" placeholder="Masukkan password">
-      </div>
-      <div id="dosen-login-error" class="alert alert-danger" style="display:none;"></div>
-      <button class="btn btn-primary" onclick="dosenLogin()">Masuk sebagai Dosen</button>
-    </div>
-
-    <!-- Form Mahasiswa -->
-    <div id="form-mahasiswa" class="login-form">
-      <div class="alert alert-info" style="margin-bottom:16px;">
-        Masukkan NIM dan kode ujian yang diberikan oleh dosen.
-      </div>
-      <div class="form-group">
-        <label>NIM</label>
-        <input type="text" id="mhs-nim" placeholder="Contoh: 2021001234" autocomplete="off">
+        <label>Nama Lengkap</label>
+        <input type="text" id="mhs-nama" placeholder="Masukkan Nama Lengkap" autocomplete="off">
       </div>
       <div class="form-group">
         <label>Kode Ujian</label>
-        <input type="text" id="mhs-kode" placeholder="Contoh: MTK2024" autocomplete="off" style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
+        <input type="text" id="mhs-kode" placeholder="CONTOH: MTK01" style="text-transform:uppercase">
       </div>
-      <div id="mhs-login-error" class="alert alert-danger" style="display:none;"></div>
-      <button class="btn btn-primary" onclick="mahasiswaLogin()">Masuk & Mulai Ujian</button>
+      <div id="mhs-login-error" style="color:red; font-size:12px; margin-bottom:10px; display:none"></div>
+      <button class="btn btn-primary" onclick="mahasiswaLogin()">MULAI UJIAN SEKARANG</button>
+    </div>
+
+    <div id="form-dosen" class="login-form">
+      <h3 style="margin-bottom:15px; text-align:center">Login Dosen</h3>
+      <div class="form-group">
+        <input type="text" id="dosen-username" placeholder="Username">
+      </div>
+      <div class="form-group">
+        <input type="password" id="dosen-password" placeholder="Password">
+      </div>
+      <button class="btn btn-primary" onclick="dosenLogin()">Masuk Admin</button>
+      <button class="btn" style="margin-top:10px" onclick="switchLoginTab('mahasiswa')">Kembali</button>
     </div>
   </div>
 </div>
 
-<!-- ==================== SCREEN: DOSEN DASHBOARD ==================== -->
-<div id="screen-dosen" class="screen">
-  <div class="topbar">
-    <div class="topbar-brand">Si<span>UJIAN</span></div>
-    <div class="topbar-user">
-      <span id="topbar-username" class="text-sm" style="color:rgba(255,255,255,0.7);">Admin</span>
-      <div class="avatar">A</div>
-      <button class="btn btn-sm btn-outline" style="color:#fff; border-color:rgba(255,255,255,0.3);" onclick="dosenLogout()">Keluar</button>
-    </div>
-  </div>
-
-  <div class="dosen-content">
-    <div class="nav-tabs">
-      <button class="nav-tab active" onclick="switchTab('setting')">⚙️ Setting Ujian</button>
-      <button class="nav-tab" onclick="switchTab('monitor')">📊 Monitor</button>
-      <button class="nav-tab" onclick="switchTab('log')">📋 Log Pelanggaran</button>
-      <button class="nav-tab" onclick="switchTab('password')">🔒 Ganti Password</button>
-    </div>
-
-    <!-- TAB: Setting Ujian -->
-    <div id="tab-setting" class="tab-content active">
-      <div id="ujian-active-banner" class="ujian-active-banner" style="display:none;">
-        <div class="pulse-dot"></div>
-        <div style="flex:1;">
-          <div style="font-weight:700; font-size:14px;">Ujian Sedang Berlangsung</div>
-          <div style="font-size:12px; opacity:0.8;" id="banner-kode"></div>
-        </div>
-        <button class="btn btn-sm btn-danger" onclick="confirmHentikan()">Hentikan</button>
-      </div>
-
-      <div class="card">
-        <div class="card-title">⚙️ Konfigurasi Ujian</div>
-
-        <div class="form-group">
-          <label>Link Google Form</label>
-          <input type="url" id="setting-gform" placeholder="https://docs.google.com/forms/d/...">
-          <div class="text-sm text-muted mt-8">Pastikan Google Form bisa diakses publik.</div>
-        </div>
-
-        <div class="form-group">
-          <label>Kode Ujian (dibagikan ke mahasiswa)</label>
-          <input type="text" id="setting-kode" placeholder="Contoh: MTK2024" oninput="this.value=this.value.toUpperCase()" style="text-transform:uppercase; font-weight:700; letter-spacing:2px;">
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Durasi Ujian (menit)</label>
-            <input type="number" id="setting-durasi" value="90" min="5" max="300">
-          </div>
-          <div class="form-group">
-            <label>Batas Pelanggaran</label>
-            <input type="number" id="setting-pelanggaran" value="3" min="1" max="10">
-            <div class="text-sm text-muted mt-8">Default: 3 kali</div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Google Sheets Webhook URL (untuk log otomatis)</label>
-          <input type="url" id="setting-webhook" placeholder="https://script.google.com/macros/s/...">
-          <div class="text-sm text-muted mt-8">Opsional. Lihat panduan untuk mendapatkan URL ini.</div>
-        </div>
-
-        <button class="btn btn-primary" onclick="mulaiUjian()">🚀 Aktifkan Ujian</button>
-      </div>
-
-      <div id="kode-info-card" class="card" style="display:none;">
-        <div class="kode-display">
-          <div class="kode-label">Kode Ujian Aktif</div>
-          <div class="kode-value" id="kode-display-value"></div>
-        </div>
-        <div class="text-sm text-muted" style="text-align:center; margin-top:8px;">
-          Bagikan kode ini ke mahasiswa
-        </div>
-      </div>
-
-      <div id="link-mhs-wrap" class="card" style="display:none;">
-        <div class="card-title">🔗 Link untuk Mahasiswa</div>
-        <div class="alert alert-success" style="margin-bottom:12px;">
-          Bagikan link ini ke mahasiswa. Mahasiswa tinggal buka link → login dengan NIM + kode ujian.
-        </div>
-        <div style="display:flex; gap:8px; align-items:center;">
-          <input type="text" id="link-mhs-input" readonly style="font-size:12px; font-family:'JetBrains Mono',monospace; background:#f4f6f9; flex:1;">
-          <button class="btn btn-primary" style="white-space:nowrap; flex-shrink:0;" onclick="copyLink()">📋 Salin</button>
-        </div>
-        <div class="text-sm text-muted mt-8">Mahasiswa tidak perlu login sebagai dosen — cukup buka link ini.</div>
-      </div>
-    </div>
-
-    <!-- TAB: Monitor -->
-    <div id="tab-monitor" class="tab-content">
-      <div class="stats-row">
-        <div class="stat-card">
-          <div class="stat-value" id="stat-total">0</div>
-          <div class="stat-label">Total Peserta</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="stat-aktif" style="color:var(--success);">0</div>
-          <div class="stat-label">Sedang Ujian</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="stat-violation" style="color:var(--danger);">0</div>
-          <div class="stat-label">Total Pelanggaran</div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title" style="display:flex; align-items:center; justify-content:space-between;">
-          <span>📋 Daftar Peserta</span>
-          <button class="btn btn-sm btn-outline" onclick="refreshMonitor()">🔄 Refresh</button>
-        </div>
-        <div id="mhs-list-container">
-          <div class="empty-state">
-            <div class="empty-icon">📭</div>
-            <div class="empty-text">Belum ada peserta yang masuk.<br>Aktifkan ujian terlebih dahulu.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB: Log Pelanggaran -->
-    <div id="tab-log" class="tab-content">
-      <div class="card">
-        <div class="card-title" style="display:flex; align-items:center; justify-content:space-between;">
-          <span>📋 Log Pelanggaran</span>
-          <div style="display:flex; gap:8px;">
-            <button class="btn btn-sm btn-outline" onclick="clearLog()">🗑️ Hapus</button>
-            <button class="btn btn-sm btn-success" onclick="downloadCSV()">⬇️ Download CSV</button>
-          </div>
-        </div>
-        <div id="log-container">
-          <div class="empty-state">
-            <div class="empty-icon">✅</div>
-            <div class="empty-text">Belum ada pelanggaran tercatat.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB: Ganti Password -->
-    <div id="tab-password" class="tab-content">
-      <div class="card">
-        <div class="card-title">🔒 Ganti Password Admin</div>
-        <div class="form-group">
-          <label>Password Lama</label>
-          <input type="password" id="pw-lama" placeholder="Masukkan password lama">
-        </div>
-        <div class="form-group">
-          <label>Password Baru</label>
-          <input type="password" id="pw-baru" placeholder="Minimal 6 karakter">
-        </div>
-        <div class="form-group">
-          <label>Konfirmasi Password Baru</label>
-          <input type="password" id="pw-konfirmasi" placeholder="Ulangi password baru">
-        </div>
-        <div id="pw-error" class="alert alert-danger" style="display:none;"></div>
-        <div id="pw-success" class="alert alert-success" style="display:none;"></div>
-        <button class="btn btn-primary" onclick="gantiPassword()">Simpan Password Baru</button>
-      </div>
-    </div>
-
-  </div><!-- end dosen-content -->
-</div><!-- end screen-dosen -->
-
-<!-- ==================== SCREEN: UJIAN MAHASISWA ==================== -->
 <div id="screen-ujian" class="screen">
   <div class="ujian-topbar">
-    <div class="ujian-info">
-      <div class="ujian-nim" id="ujian-nim-display">NIM</div>
-      <div class="violation-bar">
-        <span style="font-size:11px; color:rgba(255,255,255,0.5);">Pelanggaran:</span>
-        <div class="violation-dots" id="violation-dots"></div>
-      </div>
+    <div class="timer-box" id="ujian-timer">00:00</div>
+    <div style="color:#fff; font-size:12px; font-weight:700" id="display-nama">NAMA</div>
+    <button onclick="triggerModalSelesai()" class="btn btn-danger" style="width:auto; padding:5px 15px; font-size:12px">SELESAI</button>
+  </div>
+  <div class="iframe-container" id="iframe-holder">
     </div>
-    <div style="display:flex; align-items:center; gap:12px;">
-      <div class="ujian-timer" id="ujian-timer">--:--</div>
-      <button onclick="confirmSelesai()" style="background:#c0392b; color:#fff; border:none; border-radius:8px; padding:8px 14px; font-family:inherit; font-size:13px; font-weight:700; cursor:pointer;">Selesai</button>
+</div>
+
+<div id="violation-overlay" class="modal-bg">
+    <div class="modal">
+        <h2 style="color:var(--danger)">PELANGGARAN!</h2>
+        <p id="vio-msg" style="margin: 15px 0; font-size:14px">Jangan keluar dari aplikasi ujian.</p>
+        <button class="btn btn-primary" onclick="closeViolation()">Saya Mengerti</button>
     </div>
-  </div>
-
-  <div class="iframe-container">
-    <iframe id="exam-iframe" sandbox="allow-forms allow-same-origin allow-scripts allow-popups"></iframe>
-    <div class="watermark" id="watermark-layer"></div>
-  </div>
-
-  <div class="fullscreen-reminder" id="fullscreen-bar" style="display:none;">
-    ⚠️ Tetap dalam mode layar penuh
-    <button id="btn-go-fullscreen" onclick="enterFullscreen()">Aktifkan Layar Penuh</button>
-  </div>
 </div>
 
-<!-- ==================== OVERLAYS ==================== -->
-
-<!-- Pelanggaran overlay -->
-<div class="violation-overlay" id="violation-overlay">
-  <div class="violation-icon">⚠️</div>
-  <div class="violation-title" id="vio-title">Pelanggaran Terdeteksi!</div>
-  <div class="violation-desc" id="vio-desc">Kamu keluar dari halaman ujian.</div>
-  <div style="color:rgba(255,255,255,0.5); font-size:13px;" id="vio-count-text"></div>
-  <button class="btn btn-accent" onclick="dismissViolation()" id="vio-btn">Kembali ke Ujian</button>
-</div>
-
-<!-- Terkunci overlay -->
-<!-- Terkunci / Selesai overlay -->
-<div class="locked-overlay" id="locked-overlay">
-  <div id="locked-icon-el" style="font-size:64px;">🔒</div>
-  <div class="locked-title" id="locked-title">Ujian Dikunci</div>
-  <div class="locked-desc" id="locked-desc">Kamu telah melebihi batas pelanggaran.</div>
-  <div id="locked-sub" style="color:rgba(255,255,255,0.4); font-size:12px; margin-top:8px;">Hubungi dosen untuk informasi lebih lanjut.</div>
-</div>
-
-<!-- Halaman Terima Kasih (setelah selesai) -->
-<div class="locked-overlay" id="terimakasih-overlay" style="background: linear-gradient(135deg, #0a2e1a 0%, #0f4d2a 100%);">
-  <div style="font-size:72px; margin-bottom:8px;">🎉</div>
-  <div style="font-size:26px; font-weight:700; color:#fff; margin-bottom:12px;">Ujian Selesai!</div>
-  <div style="font-size:15px; color:rgba(255,255,255,0.8); max-width:300px; text-align:center; line-height:1.6; margin-bottom:8px;">
-    Terima kasih, <span id="tk-nim" style="font-weight:700; color:#4ade80;"></span>!<br>
-    Jawaban kamu sudah tersimpan di Google Form.
-  </div>
-  <div style="font-size:13px; color:rgba(255,255,255,0.5); margin-bottom:28px;">Kamu boleh menutup halaman ini.</div>
-  <div style="background:rgba(255,255,255,0.1); border-radius:12px; padding:14px 24px; text-align:center; margin-bottom:20px;">
-    <div style="font-size:11px; color:rgba(255,255,255,0.5); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Pelanggaran tercatat</div>
-    <div id="tk-violations" style="font-size:22px; font-weight:700; color:#fff;">0 kali</div>
-  </div>
-  <button onclick="window.location.href=window.location.href.split('?')[0]"
-    style="background:#4ade80; color:#0a2e1a; border:none; border-radius:10px; padding:14px 32px; font-family:inherit; font-size:15px; font-weight:700; cursor:pointer;">
-    Tutup & Kembali ke Halaman Awal
-  </button>
-</div>
-
-<!-- Modal konfirmasi hentikan ujian -->
-<div class="modal-bg" id="modal-hentikan">
-  <div class="modal">
-    <div class="modal-title">⚠️ Hentikan Ujian?</div>
-    <p class="text-sm text-muted">Semua sesi mahasiswa akan langsung dikunci. Tindakan ini tidak dapat dibatalkan.</p>
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeModal('modal-hentikan')">Batal</button>
-      <button class="btn btn-danger" onclick="hentikanUjian()">Ya, Hentikan</button>
+<div id="modal-selesai" class="modal-bg">
+    <div class="modal">
+        <h3>Selesai Ujian?</h3>
+        <p style="font-size:13px; margin:15px 0">Pastikan Anda sudah menekan tombol <b>KIRIM/SUBMIT</b> pada Google Form sebelum keluar.</p>
+        <button class="btn btn-success" style="background:var(--success); color:#fff" onclick="finalSelesai()">YA, SAYA SUDAH KIRIM</button>
+        <button class="btn" style="margin-top:10px" onclick="closeModalSelesai()">BELUM</button>
     </div>
-  </div>
 </div>
-
-<!-- Modal konfirmasi selesai (mahasiswa) -->
-<div class="modal-bg" id="modal-selesai">
-  <div class="modal">
-    <div class="modal-title">✅ Selesai Mengerjakan?</div>
-    <p class="text-sm text-muted" style="margin-bottom:8px;">Pastikan kamu sudah menekan tombol <strong>Submit</strong> di Google Form sebelum keluar.</p>
-    <p class="text-sm text-muted">Setelah keluar, kamu <strong>tidak bisa kembali</strong> ke halaman ujian.</p>
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="batalSelesai()">Kembali ke Ujian</button>
-      <button class="btn btn-success" onclick="selesaiUjian()">Ya, Saya Sudah Submit</button>
-    </div>
-  </div>
-</div>
-
-<!-- Toast -->
-<div id="toast" style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#1a2332; color:#fff; padding:12px 20px; border-radius:8px; font-size:14px; z-index:99998; opacity:0; transition:opacity 0.3s; pointer-events:none; white-space:nowrap;"></div>
 
 <script>
-// ==================== STATE ====================
-const DEFAULT_CREDS = { username: 'admin', password: 'dosen123' };
+// 1. DETEKSI HP SAJA
+function checkDevice() {
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (!isMobile) {
+        document.getElementById('mobile-error').style.display = 'flex';
+        document.getElementById('screen-login').style.display = 'none';
+    }
+}
+window.onload = checkDevice;
 
+// 2. STATE & CONFIG
 let state = {
-  ujianAktif: false,
-  gformUrl: '',
-  kodeUjian: '',
-  durasi: 90,
-  batasViolation: 3,
-  webhookUrl: '',
-  peserta: {},      // { nim: { violations: [], status: 'aktif'|'selesai'|'dikunci' } }
-  violationLog: [], // { waktu, nim, tipe }
+    ujianAktif: true, // Untuk demo kita set true
+    gform: "https://docs.google.com/forms/d/e/1FAIpQLSfD_L5.../viewform?embedded=true", 
+    kode: "RX01",
+    durasi: 60,
+    strikes: 0
 };
 
-let mhsSession = {
-  nim: '',
-  kodeUjian: '',
-  violations: 0,
-  timerInterval: null,
-  sisaDetik: 0,
-  locked: false,
-};
-
-// Load from localStorage
-function loadState() {
-  try {
-    const saved = localStorage.getItem('siujian_state');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      state = { ...state, ...parsed };
-    }
-    const savedCreds = localStorage.getItem('siujian_creds');
-    if (savedCreds) {
-      const c = JSON.parse(savedCreds);
-      if (c.username) DEFAULT_CREDS.username = c.username;
-      if (c.password) DEFAULT_CREDS.password = c.password;
-    }
-  } catch(e) {}
-}
-
-function saveState() {
-  try {
-    localStorage.setItem('siujian_state', JSON.stringify(state));
-  } catch(e) {}
-}
-
-// ==================== LOGIN ====================
+// 3. LOGIN LOGIC
 function switchLoginTab(tab) {
-  document.querySelectorAll('.login-tab').forEach((el, i) => {
-    el.classList.toggle('active', (tab === 'dosen' && i === 0) || (tab === 'mahasiswa' && i === 1));
-  });
-  document.getElementById('form-dosen').classList.toggle('active', tab === 'dosen');
-  document.getElementById('form-mahasiswa').classList.toggle('active', tab === 'mahasiswa');
-}
-
-function dosenLogin() {
-  const un = document.getElementById('dosen-username').value.trim();
-  const pw = document.getElementById('dosen-password').value;
-  const err = document.getElementById('dosen-login-error');
-
-  const savedCreds = localStorage.getItem('siujian_creds');
-  let creds = DEFAULT_CREDS;
-  if (savedCreds) {
-    try { creds = JSON.parse(savedCreds); } catch(e) {}
-  }
-
-  if (un === creds.username && pw === creds.password) {
-    err.style.display = 'none';
-    showScreen('dosen');
-    document.getElementById('topbar-username').textContent = un;
-    loadDosenState();
-  } else {
-    err.style.display = 'block';
-    err.textContent = 'Username atau password salah.';
-  }
-}
-
-function dosenLogout() {
-  showScreen('login');
+    document.getElementById('form-mahasiswa').classList.toggle('active', tab === 'mahasiswa');
+    document.getElementById('form-dosen').classList.toggle('active', tab === 'dosen');
 }
 
 function mahasiswaLogin() {
-  const nim = document.getElementById('mhs-nim').value.trim();
-  const kode = document.getElementById('mhs-kode').value.trim().toUpperCase();
-  const err = document.getElementById('mhs-login-error');
-
-  if (!nim) { showErr(err, 'NIM tidak boleh kosong.'); return; }
-  if (!kode) { showErr(err, 'Kode ujian tidak boleh kosong.'); return; }
-
-  if (!state.ujianAktif) {
-    showErr(err, 'Tidak ada ujian aktif saat ini. Hubungi dosen.');
-    return;
-  }
-
-  if (kode !== state.kodeUjian) {
-    showErr(err, 'Kode ujian salah. Periksa kembali.');
-    return;
-  }
-
-  // Check if already locked
-  if (state.peserta[nim] && state.peserta[nim].status === 'dikunci') {
-    showErr(err, 'Akun kamu telah dikunci karena pelanggaran. Hubungi dosen.');
-    return;
-  }
-
-  err.style.display = 'none';
-
-  // Register peserta
-  if (!state.peserta[nim]) {
-    state.peserta[nim] = { violations: [], status: 'aktif', loginTime: new Date().toISOString() };
-  } else {
-    state.peserta[nim].status = 'aktif';
-  }
-  saveState();
-
-  // Set mahasiswa session
-  mhsSession.nim = nim;
-  mhsSession.kodeUjian = kode;
-  mhsSession.violations = state.peserta[nim].violations.length;
-  mhsSession.locked = false;
-  mhsSession.sisaDetik = state.durasi * 60;
-
-  startUjianScreen();
+    const nama = document.getElementById('mhs-nama').value;
+    const kode = document.getElementById('mhs-kode').value.toUpperCase();
+    
+    if(!nama || !kode) return alert("Isi Nama dan Kode!");
+    
+    // Simulasi Start Ujian
+    document.getElementById('display-nama').textContent = nama;
+    document.getElementById('screen-login').classList.remove('active');
+    document.getElementById('screen-ujian').classList.add('active');
+    
+    startExamSession();
 }
 
-function showErr(el, msg) {
-  el.style.display = 'block';
-  el.textContent = msg;
+// 4. EXAM SESSION
+function startExamSession() {
+    // Injeksi Iframe (Cara ini lebih ampuh agar G-Form muncul)
+    const container = document.getElementById('iframe-holder');
+    container.innerHTML = `<iframe id="exam-iframe" src="${state.gform}"></iframe>`;
+    
+    // Request Fullscreen
+    const el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+
+    startTimer(state.durasi);
+    setupCheatDetection();
 }
 
-// ==================== DOSEN DASHBOARD ====================
-function loadDosenState() {
-  // Load settings into form
-  if (state.gformUrl) document.getElementById('setting-gform').value = state.gformUrl;
-  if (state.kodeUjian) document.getElementById('setting-kode').value = state.kodeUjian;
-  if (state.durasi) document.getElementById('setting-durasi').value = state.durasi;
-  if (state.batasViolation) document.getElementById('setting-pelanggaran').value = state.batasViolation;
-  if (state.webhookUrl) document.getElementById('setting-webhook').value = state.webhookUrl;
+// 5. CHEAT DETECTION (STRIKE SYSTEM)
+function setupCheatDetection() {
+    // Deteksi Pindah Tab / Buka Notifikasi
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+            triggerStrike("Pindah Aplikasi / Buka Notifikasi");
+        }
+    });
 
-  if (state.ujianAktif) {
-    document.getElementById('ujian-active-banner').style.display = 'flex';
-    document.getElementById('banner-kode').textContent = 'Kode: ' + state.kodeUjian;
-    document.getElementById('kode-info-card').style.display = 'block';
-    document.getElementById('kode-display-value').textContent = state.kodeUjian;
-    if (state.linkMahasiswa) {
-      document.getElementById('link-mhs-wrap').style.display = 'block';
-      document.getElementById('link-mhs-input').value = state.linkMahasiswa;
+    // Proteksi Tombol Screenshot & Keyboard
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'PrintScreen' || (e.ctrlKey && e.key === 'p')) {
+            e.preventDefault();
+            triggerStrike("Mencoba Screenshot");
+            // Efek Blackout
+            document.body.style.display = 'none';
+            setTimeout(() => { document.body.style.display = 'block'; }, 1000);
+        }
+    });
+}
+
+function triggerStrike(msg) {
+    state.strikes++;
+    if (state.strikes >= 3) {
+        alert("DISKUALIFIKASI: Anda keluar terlalu banyak.");
+        location.reload();
+    } else {
+        document.getElementById('vio-msg').innerText = msg + " (Peringatan " + state.strikes + "/3)";
+        document.getElementById('violation-overlay').classList.add('show');
     }
-  }
-
-  refreshMonitor();
-  renderLog();
 }
 
-function switchTab(tab) {
-  document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-  event.target.classList.add('active');
-  document.getElementById('tab-' + tab).classList.add('active');
-
-  if (tab === 'monitor') refreshMonitor();
-  if (tab === 'log') renderLog();
+function closeViolation() {
+    document.getElementById('violation-overlay').classList.remove('show');
+    // Paksa Fullscreen lagi
+    document.documentElement.requestFullscreen();
 }
 
-function mulaiUjian() {
-  const gform = document.getElementById('setting-gform').value.trim();
-  const kode = document.getElementById('setting-kode').value.trim().toUpperCase();
-  const durasi = parseInt(document.getElementById('setting-durasi').value);
-  const batas = parseInt(document.getElementById('setting-pelanggaran').value);
-  const webhook = document.getElementById('setting-webhook').value.trim();
-
-  if (!gform) { showToast('❌ Link Google Form harus diisi!'); return; }
-  if (!kode) { showToast('❌ Kode ujian harus diisi!'); return; }
-  if (!durasi || durasi < 5) { showToast('❌ Durasi minimal 5 menit!'); return; }
-
-  state.ujianAktif = true;
-  state.gformUrl = gform;
-  state.kodeUjian = kode;
-  state.durasi = durasi;
-  state.batasViolation = batas;
-  state.webhookUrl = webhook;
-  state.peserta = {};
-  state.violationLog = [];
-  saveState();
-
-  // Generate link mahasiswa — semua config disimpan di URL
-  const cfg = {
-    aktif: 1,
-    kode: kode,
-    gform: gform,
-    durasi: durasi,
-    batas: batas,
-    webhook: webhook,
-  };
-  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(cfg))));
-  const baseUrl = window.location.href.split('?')[0].split('#')[0];
-  const linkMhs = baseUrl + '?ujian=' + encoded;
-
-  state.linkMahasiswa = linkMhs;
-  saveState();
-
-  document.getElementById('ujian-active-banner').style.display = 'flex';
-  document.getElementById('banner-kode').textContent = 'Kode: ' + kode;
-  document.getElementById('kode-info-card').style.display = 'block';
-  document.getElementById('kode-display-value').textContent = kode;
-
-  // Tampilkan link mahasiswa
-  document.getElementById('link-mhs-wrap').style.display = 'block';
-  document.getElementById('link-mhs-input').value = linkMhs;
-
-  showToast('✅ Ujian aktif! Bagikan link ke mahasiswa.');
+// 6. TIMER & SELESAI
+function startTimer(min) {
+    let sec = min * 60;
+    const timerEl = document.getElementById('ujian-timer');
+    const countdown = setInterval(() => {
+        let m = Math.floor(sec / 60);
+        let s = sec % 60;
+        timerEl.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        if (sec <= 0) {
+            clearInterval(countdown);
+            alert("Waktu Habis!");
+            location.reload();
+        }
+        sec--;
+    }, 1000);
 }
 
-function confirmHentikan() {
-  document.getElementById('modal-hentikan').classList.add('show');
+function triggerModalSelesai() {
+    document.getElementById('modal-selesai').classList.add('show');
 }
 
-function hentikanUjian() {
-  state.ujianAktif = false;
-  // Lock semua peserta aktif
-  Object.keys(state.peserta).forEach(nim => {
-    if (state.peserta[nim].status === 'aktif') {
-      state.peserta[nim].status = 'selesai';
-    }
-  });
-  saveState();
-
-  document.getElementById('ujian-active-banner').style.display = 'none';
-  document.getElementById('kode-info-card').style.display = 'none';
-  closeModal('modal-hentikan');
-  showToast('🛑 Ujian telah dihentikan.');
+function closeModalSelesai() {
+    document.getElementById('modal-selesai').classList.remove('show');
 }
 
-function refreshMonitor() {
-  const peserta = state.peserta;
-  const nims = Object.keys(peserta);
-
-  const total = nims.length;
-  const aktif = nims.filter(n => peserta[n].status === 'aktif').length;
-  const totalVio = nims.reduce((a, n) => a + (peserta[n].violations ? peserta[n].violations.length : 0), 0);
-
-  document.getElementById('stat-total').textContent = total;
-  document.getElementById('stat-aktif').textContent = aktif;
-  document.getElementById('stat-violation').textContent = totalVio;
-
-  const container = document.getElementById('mhs-list-container');
-  if (nims.length === 0) {
-    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Belum ada peserta yang masuk.<br>Aktifkan ujian terlebih dahulu.</div></div>';
-    return;
-  }
-
-  let html = '<div class="mhs-list">';
-  nims.forEach(nim => {
-    const p = peserta[nim];
-    const vCount = p.violations ? p.violations.length : 0;
-    const statusBadge = p.status === 'aktif' ? '<span class="badge badge-active">● Aktif</span>' :
-                        p.status === 'dikunci' ? '<span class="badge badge-inactive">🔒 Dikunci</span>' :
-                        '<span class="badge badge-warning">✓ Selesai</span>';
-    html += `<div class="mhs-item">
-      <div class="mhs-info">
-        <div class="mhs-nim">${nim}</div>
-        <div class="mhs-status">${statusBadge}</div>
-      </div>
-      <div class="mhs-violations">
-        <span class="violation-count">${vCount}x pelanggaran</span>
-      </div>
-    </div>`;
-  });
-  html += '</div>';
-  container.innerHTML = html;
+function finalSelesai() {
+    alert("Terima kasih! Ujian Anda telah selesai.");
+    location.reload();
 }
 
-function renderLog() {
-  const container = document.getElementById('log-container');
-  const logs = state.violationLog;
-  if (!logs || logs.length === 0) {
-    container.innerHTML = '<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-text">Belum ada pelanggaran tercatat.</div></div>';
-    return;
-  }
-
-  let html = `<div style="overflow-x:auto;"><table style="width:100%; border-collapse:collapse; font-size:13px;">
-    <thead>
-      <tr style="background:var(--bg); text-align:left;">
-        <th style="padding:10px 12px; color:var(--text-muted); font-weight:600; border-bottom:1px solid var(--border);">Waktu</th>
-        <th style="padding:10px 12px; color:var(--text-muted); font-weight:600; border-bottom:1px solid var(--border);">NIM</th>
-        <th style="padding:10px 12px; color:var(--text-muted); font-weight:600; border-bottom:1px solid var(--border);">Jenis Pelanggaran</th>
-      </tr>
-    </thead>
-    <tbody>`;
-
-  logs.forEach(log => {
-    html += `<tr style="border-bottom:1px solid var(--border);">
-      <td style="padding:10px 12px; color:var(--text-muted);">${log.waktu}</td>
-      <td style="padding:10px 12px; font-weight:700; color:var(--primary); font-family:'JetBrains Mono',monospace;">${log.nim}</td>
-      <td style="padding:10px 12px;">${log.tipe}</td>
-    </tr>`;
-  });
-
-  html += '</tbody></table></div>';
-  container.innerHTML = html;
-}
-
-function clearLog() {
-  state.violationLog = [];
-  saveState();
-  renderLog();
-  showToast('🗑️ Log pelanggaran dihapus.');
-}
-
-function downloadCSV() {
-  const logs = state.violationLog;
-  if (!logs || logs.length === 0) {
-    showToast('❌ Tidak ada log untuk didownload.');
-    return;
-  }
-
-  let csv = 'Waktu,NIM,Jenis Pelanggaran\n';
-  logs.forEach(log => {
-    csv += `"${log.waktu}","${log.nim}","${log.tipe}"\n`;
-  });
-
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `log-pelanggaran-${state.kodeUjian}-${new Date().toISOString().slice(0,10)}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
-  showToast('✅ Log berhasil didownload!');
-}
-
-function gantiPassword() {
-  const lama = document.getElementById('pw-lama').value;
-  const baru = document.getElementById('pw-baru').value;
-  const konfirmasi = document.getElementById('pw-konfirmasi').value;
-  const errEl = document.getElementById('pw-error');
-  const sucEl = document.getElementById('pw-success');
-
-  errEl.style.display = 'none';
-  sucEl.style.display = 'none';
-
-  const savedCreds = localStorage.getItem('siujian_creds');
-  let creds = { username: 'admin', password: 'dosen123' };
-  if (savedCreds) {
-    try { creds = JSON.parse(savedCreds); } catch(e) {}
-  }
-
-  if (lama !== creds.password) {
-    errEl.style.display = 'block';
-    errEl.textContent = 'Password lama salah.';
-    return;
-  }
-
-  if (baru.length < 6) {
-    errEl.style.display = 'block';
-    errEl.textContent = 'Password baru minimal 6 karakter.';
-    return;
-  }
-
-  if (baru !== konfirmasi) {
-    errEl.style.display = 'block';
-    errEl.textContent = 'Konfirmasi password tidak cocok.';
-    return;
-  }
-
-  creds.password = baru;
-  localStorage.setItem('siujian_creds', JSON.stringify(creds));
-
-  document.getElementById('pw-lama').value = '';
-  document.getElementById('pw-baru').value = '';
-  document.getElementById('pw-konfirmasi').value = '';
-
-  sucEl.style.display = 'block';
-  sucEl.textContent = '✅ Password berhasil diubah!';
-}
-
-// ==================== UJIAN MAHASISWA ====================
-function startUjianScreen() {
-  showScreen('ujian');
-  renderWatermark();
-  renderViolationDots();
-  updateTimerDisplay();
-  startTimer();
-
-  document.getElementById('ujian-nim-display').textContent = mhsSession.nim;
-
-  // Load iframe
-  const iframe = document.getElementById('exam-iframe');
-  iframe.src = state.gformUrl;
-
-  // Enter fullscreen
-  setTimeout(() => {
-    enterFullscreen();
-  }, 500);
-
-  // Setup violation detection
-  setupViolationDetection();
-}
-
-function renderWatermark() {
-  const layer = document.getElementById('watermark-layer');
-  layer.innerHTML = '';
-  const text = `${mhsSession.nim}`;
-  const positions = [
-    { top: '15%', left: '10%' }, { top: '15%', left: '50%' },
-    { top: '35%', left: '30%' }, { top: '35%', left: '70%' },
-    { top: '55%', left: '10%' }, { top: '55%', left: '50%' },
-    { top: '75%', left: '30%' }, { top: '75%', left: '70%' },
-  ];
-  positions.forEach(pos => {
-    const el = document.createElement('div');
-    el.className = 'watermark-text';
-    el.textContent = text;
-    el.style.top = pos.top;
-    el.style.left = pos.left;
-    layer.appendChild(el);
-  });
-}
-
-function renderViolationDots() {
-  const container = document.getElementById('violation-dots');
-  container.innerHTML = '';
-  for (let i = 0; i < state.batasViolation; i++) {
-    const dot = document.createElement('div');
-    dot.className = 'vdot' + (i < mhsSession.violations ? ' filled' : '');
-    container.appendChild(dot);
-  }
-}
-
-function startTimer() {
-  clearInterval(mhsSession.timerInterval);
-  mhsSession.timerInterval = setInterval(() => {
-    if (mhsSession.locked) { clearInterval(mhsSession.timerInterval); return; }
-    mhsSession.sisaDetik--;
-    if (mhsSession.sisaDetik <= 0) {
-      clearInterval(mhsSession.timerInterval);
-      lockUjian('waktu', 'Waktu ujian telah habis.');
-      return;
-    }
-    updateTimerDisplay();
-  }, 1000);
-}
-
-function updateTimerDisplay() {
-  const el = document.getElementById('ujian-timer');
-  const menit = Math.floor(mhsSession.sisaDetik / 60);
-  const detik = mhsSession.sisaDetik % 60;
-  el.textContent = `${String(menit).padStart(2,'0')}:${String(detik).padStart(2,'0')}`;
-
-  el.className = 'ujian-timer';
-  if (mhsSession.sisaDetik <= 60) el.classList.add('danger');
-  else if (mhsSession.sisaDetik <= 300) el.classList.add('warning');
-}
-
-// ==================== VIOLATION DETECTION ====================
-let violationCooldown = false;
-let ujianStarted = false;
-let fullscreenViolationCooldown = false;
-let lastWidth = window.innerWidth;
-let lastHeight = window.innerHeight;
-
-function setupViolationDetection() {
-  // Jeda 5 detik sebelum deteksi aktif — beri waktu fullscreen masuk & iframe load
-  setTimeout(() => {
-    ujianStarted = true;
-
-    // Pindah tab / minimize / home button HP
-    document.addEventListener('visibilitychange', onVisibilityChange);
-
-    // Fullscreen change
-    document.addEventListener('fullscreenchange', onFullscreenChange);
-    document.addEventListener('webkitfullscreenchange', onFullscreenChange);
-
-    // Split screen (resize lebar besar)
-    lastWidth = window.innerWidth;
-    lastHeight = window.innerHeight;
-    window.addEventListener('resize', onWindowResize);
-
-    // Keyboard shortcuts & printscreen
-    document.addEventListener('keydown', onKeyDown);
-
-    // Klik kanan
-    document.addEventListener('contextmenu', e => e.preventDefault());
-
-    // Deteksi close browser / tab baru via beforeunload
-    window.addEventListener('beforeunload', onBeforeUnload);
-
-    // Deteksi buka tab baru via keyboard (Ctrl+T, Ctrl+N)
-    // sudah di-handle di onKeyDown
-
-  }, 5000);
-}
-
-function onVisibilityChange() {
-  if (!ujianStarted || mhsSession.locked) return;
-  if (document.hidden) {
-    triggerViolation('Pindah Tab / Minimize / Buka Notifikasi');
-  }
-}
-
-function onBeforeUnload(e) {
-  if (!ujianStarted || mhsSession.locked) return;
-  // Log ke state sebelum halaman tutup
-  const waktu = new Date().toLocaleString('id-ID');
-  const logEntry = { waktu, nim: mhsSession.nim, tipe: 'Menutup Browser / Tab' };
-  state.violationLog.push(logEntry);
-  if (!state.peserta[mhsSession.nim]) state.peserta[mhsSession.nim] = { violations: [], status: 'aktif' };
-  state.peserta[mhsSession.nim].violations.push(logEntry);
-  saveState();
-  sendToWebhook(logEntry);
-  // Tampilkan dialog konfirmasi browser
-  e.preventDefault();
-  e.returnValue = 'Kamu sedang dalam ujian. Yakin ingin menutup halaman?';
-}
-
-function onFullscreenChange() {
-  if (!ujianStarted || mhsSession.locked) return;
-  const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
-  const bar = document.getElementById('fullscreen-bar');
-  if (!isFullscreen) {
-    bar.style.display = 'flex';
-    if (!fullscreenViolationCooldown) {
-      fullscreenViolationCooldown = true;
-      setTimeout(() => { fullscreenViolationCooldown = false; }, 5000);
-      triggerViolation('Keluar dari Mode Layar Penuh');
-    }
-  } else {
-    bar.style.display = 'none';
-  }
-}
-
-function onWindowResize() {
-  if (!ujianStarted || mhsSession.locked) return;
-  const currentWidth = window.innerWidth;
-  if ((lastWidth - currentWidth) > 150) {
-    triggerViolation('Split Screen Terdeteksi');
-  }
-  lastWidth = currentWidth;
-  lastHeight = window.innerHeight;
-}
-
-function onKeyDown(e) {
-  // PrintScreen — cegah & catat
-  if (e.key === 'PrintScreen' || e.code === 'PrintScreen') {
-    e.preventDefault();
-    e.stopPropagation();
-    // Blackout layar sebentar sebagai countermeasure tambahan
-    blackoutScreen(500);
-    triggerViolation('Screenshot (PrintScreen) Terdeteksi');
-    return;
-  }
-  // Ctrl+P (print to screenshot), Ctrl+S (save page)
-  if (e.ctrlKey && ['p','s'].includes(e.key.toLowerCase())) {
-    e.preventDefault();
-    triggerViolation('Shortcut Print/Save Terdeteksi');
-    return;
-  }
-  // Ctrl+T (tab baru), Ctrl+N (window baru)
-  if (e.ctrlKey && ['t','n'].includes(e.key.toLowerCase())) {
-    e.preventDefault();
-    triggerViolation('Membuka Tab / Jendela Baru');
-    return;
-  }
-  // Ctrl+W (tutup tab)
-  if (e.ctrlKey && e.key.toLowerCase() === 'w') {
-    e.preventDefault();
-    triggerViolation('Mencoba Menutup Tab');
-    return;
-  }
-  // Blokir lainnya
-  if (e.ctrlKey && ['c','v','a','u'].includes(e.key.toLowerCase())) {
-    e.preventDefault();
-  }
-  if (['F12'].includes(e.key)) { e.preventDefault(); }
-  if (e.key === 'Escape') { e.preventDefault(); }
-
-  // Meta/Win key (buka start menu / mission control)
-  if (e.metaKey) { e.preventDefault(); }
-}
-
-// Blackout sebentar — countermeasure PrintScreen
-function blackoutScreen(ms) {
-  const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:999999;';
-  document.body.appendChild(overlay);
-  setTimeout(() => overlay.remove(), ms);
-}
-
-function triggerViolation(tipe) {
-  if (mhsSession.locked || violationCooldown) return;
-  violationCooldown = true;
-  setTimeout(() => { violationCooldown = false; }, 3000);
-
-  mhsSession.violations++;
-
-  // Log violation
-  const waktu = new Date().toLocaleString('id-ID');
-  const logEntry = { waktu, nim: mhsSession.nim, tipe };
-  state.violationLog.push(logEntry);
-
-  if (!state.peserta[mhsSession.nim]) {
-    state.peserta[mhsSession.nim] = { violations: [], status: 'aktif' };
-  }
-  state.peserta[mhsSession.nim].violations.push(logEntry);
-  saveState();
-
-  // Send to webhook
-  sendToWebhook(logEntry);
-
-  renderViolationDots();
-
-  if (mhsSession.violations >= state.batasViolation) {
-    state.peserta[mhsSession.nim].status = 'dikunci';
-    saveState();
-    lockUjian('pelanggaran', `Kamu telah melanggar sebanyak ${mhsSession.violations} kali dan ujian dikunci otomatis.`);
-    return;
-  }
-
-  // Show warning overlay
-  const sisa = state.batasViolation - mhsSession.violations;
-  document.getElementById('vio-title').textContent = '⚠️ Pelanggaran Terdeteksi!';
-  document.getElementById('vio-desc').textContent = tipe;
-  document.getElementById('vio-count-text').textContent = `Pelanggaran ke-${mhsSession.violations}. Sisa toleransi: ${sisa} kali.`;
-  document.getElementById('violation-overlay').classList.add('show');
-}
-
-function confirmSelesai() {
-  ujianStarted = false; // pause deteksi saat modal muncul
-  document.getElementById('modal-selesai').classList.add('show');
-}
-
-function batalSelesai() {
-  closeModal('modal-selesai');
-  ujianStarted = true;
-  enterFullscreen();
-}
-
-function selesaiUjian() {
-  mhsSession.locked = true;
-  ujianStarted = false;
-  clearInterval(mhsSession.timerInterval);
-  document.removeEventListener('visibilitychange', onVisibilityChange);
-  window.removeEventListener('resize', onWindowResize);
-  window.removeEventListener('beforeunload', onBeforeUnload);
-
-  if (state.peserta[mhsSession.nim]) {
-    state.peserta[mhsSession.nim].status = 'selesai';
-    saveState();
-  }
-
-  closeModal('modal-selesai');
-
-  if (document.exitFullscreen) document.exitFullscreen();
-  else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-
-  // Tampilkan halaman terima kasih
-  document.getElementById('tk-nim').textContent = mhsSession.nim;
-  document.getElementById('tk-violations').textContent = mhsSession.violations + ' kali';
-  document.getElementById('terimakasih-overlay').classList.add('show');
-}
-
-function dismissViolation() {
-  document.getElementById('violation-overlay').classList.remove('show');
-  ujianStarted = true;
-  enterFullscreen();
-}
-
-function lockUjian(alasan, desc) {
-  mhsSession.locked = true;
-  ujianStarted = false;
-  clearInterval(mhsSession.timerInterval);
-
-  document.getElementById('violation-overlay').classList.remove('show');
-  document.removeEventListener('visibilitychange', onVisibilityChange);
-  window.removeEventListener('resize', onWindowResize);
-  window.removeEventListener('beforeunload', onBeforeUnload);
-
-  if (alasan === 'waktu') {
-    if (document.exitFullscreen) document.exitFullscreen();
-    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-    document.getElementById('tk-nim').textContent = mhsSession.nim;
-    document.getElementById('tk-violations').textContent = mhsSession.violations + ' kali';
-    document.getElementById('terimakasih-overlay').querySelector('[style*="font-size:26px"]').textContent = '⏰ Waktu Ujian Habis!';
-    document.getElementById('terimakasih-overlay').classList.add('show');
-  } else {
-    document.getElementById('locked-title').textContent = '🔒 Ujian Dikunci';
-    document.getElementById('locked-desc').textContent = desc || '';
-    document.getElementById('locked-sub').textContent = 'Hubungi dosen untuk informasi lebih lanjut.';
-    document.getElementById('locked-overlay').classList.add('show');
-  }
-}
-
-// ==================== FULLSCREEN ====================
-function enterFullscreen() {
-  const el = document.documentElement;
-  if (el.requestFullscreen) el.requestFullscreen();
-  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-}
-
-function tutupUjian() {
-  // Kembali ke halaman login
-  window.location.href = window.location.href.split('?')[0];
-}
-
-// ==================== WEBHOOK ====================
-function sendToWebhook(log) {
-  const url = state.webhookUrl;
-  if (!url) return;
-  fetch(url, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      waktu: log.waktu,
-      nim: log.nim,
-      tipe: log.tipe,
-      kode_ujian: state.kodeUjian,
-    })
-  }).catch(() => {});
-}
-
-function copyLink() {
-  const input = document.getElementById('link-mhs-input');
-  input.select();
-  input.setSelectionRange(0, 99999);
-  try {
-    navigator.clipboard.writeText(input.value).then(() => showToast('✅ Link disalin!'));
-  } catch(e) {
-    document.execCommand('copy');
-    showToast('✅ Link disalin!');
-  }
-}
-
-// Baca konfigurasi ujian dari URL parameter (untuk mahasiswa)
-function readUjianFromUrl() {
-  try {
-    const params = new URLSearchParams(window.location.search);
-    const encoded = params.get('ujian');
-    if (!encoded) return false;
-    const cfg = JSON.parse(decodeURIComponent(escape(atob(encoded))));
-    if (!cfg || !cfg.aktif) return false;
-
-    // Inject config ke state agar mahasiswa bisa login
-    state.ujianAktif = true;
-    state.gformUrl = cfg.gform || '';
-    state.kodeUjian = cfg.kode || '';
-    state.durasi = cfg.durasi || 90;
-    state.batasViolation = cfg.batas || 3;
-    state.webhookUrl = cfg.webhook || '';
-
-    // Otomatis buka tab mahasiswa
-    switchLoginTab('mahasiswa');
-    return true;
-  } catch(e) {
-    return false;
-  }
-}
-
-// ==================== UTILITIES ====================
-function showScreen(name) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-' + name).classList.add('active');
-}
-
-function closeModal(id) {
-  document.getElementById(id).classList.remove('show');
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.style.opacity = '1';
-  setTimeout(() => { t.style.opacity = '0'; }, 3000);
-}
-
-// ==================== INIT ====================
-loadState();
-const fromUrl = readUjianFromUrl();
-if (!fromUrl && state.ujianAktif && state.linkMahasiswa) {
-  // Pulihkan link di dashboard dosen setelah refresh
-  document.getElementById('link-mhs-wrap').style.display = 'block';
-  document.getElementById('link-mhs-input').value = state.linkMahasiswa;
-}
+// Matikan Klik Kanan
+document.addEventListener('contextmenu', e => e.preventDefault());
 </script>
+
 </body>
 </html>

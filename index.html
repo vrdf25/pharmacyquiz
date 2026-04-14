@@ -99,7 +99,7 @@
 
   /* UJIAN SCREEN */
   #screen-ujian{flex-direction:column;position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:#0a1628;-webkit-user-select:none;user-select:none;}
-  .ujian-topbar{background:#0f2040;border-bottom:1px solid rgba(255,255,255,0.1);padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:10001;}
+  .ujian-topbar{background:#0f2040;border-bottom:1px solid rgba(255,255,255,0.1);padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:relative;z-index:20000;}
   .ujian-nama{font-size:13px;font-weight:700;color:rgba(255,255,255,0.9);}
   .vbar{display:flex;align-items:center;gap:6px;}
   .vdots{display:flex;gap:4px;}
@@ -108,14 +108,23 @@
   .ujian-timer{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;padding:6px 14px;border-radius:8px;background:rgba(255,255,255,0.1);color:#fff;transition:background 0.3s;}
   .ujian-timer.tw{background:rgba(231,76,60,0.3);color:#ff6b6b;}
   .ujian-timer.td{background:rgba(231,76,60,0.6);color:#fff;animation:pulsate 1s infinite;}
-  .btn-selesai{background:#1d6fa8;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
-  .btn-selesai:active{background:#155a8a;transform:scale(0.97);}
-  .fs-bar{display:none;background:#c0392b;color:#fff;padding:10px 16px;align-items:center;justify-content:center;gap:12px;font-size:13px;flex-shrink:0;}
+  .btn-selesai{
+    background:#1d6fa8;color:#fff;border:none;border-radius:8px;
+    padding:9px 18px;font-family:inherit;font-size:13px;font-weight:700;
+    cursor:pointer;
+    position:relative;z-index:20001;
+    -webkit-tap-highlight-color:rgba(255,255,255,0.2);
+    touch-action:manipulation;
+    pointer-events:all !important;
+    -webkit-user-select:none;user-select:none;
+  }
+  .btn-selesai:active{background:#155a8a;}
+  .fs-bar{display:none;background:#c0392b;color:#fff;padding:10px 16px;align-items:center;justify-content:center;gap:12px;font-size:13px;flex-shrink:0;position:relative;z-index:20000;}
   .fs-bar.show{display:flex;}
-  .btn-fs{background:#fff;color:#c0392b;border:none;border-radius:6px;padding:6px 14px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;}
-  .iframe-wrap{flex:1;position:relative;display:flex;flex-direction:column;overflow:hidden;}
-  #exam-iframe{flex:1;width:100%;height:100%;border:none;display:block;}
-  .watermark{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:5;overflow:hidden;}
+  .btn-fs{background:#fff;color:#c0392b;border:none;border-radius:6px;padding:6px 14px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;}
+  .iframe-wrap{flex:1;position:relative;display:flex;flex-direction:column;overflow:hidden;z-index:1;}
+  #exam-iframe{flex:1;width:100%;height:100%;border:none;display:block;position:relative;z-index:2;}
+  .watermark{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:3;overflow:hidden;}
   .wm-text{position:absolute;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:rgba(100,150,200,0.12);white-space:nowrap;transform:rotate(-30deg);user-select:none;pointer-events:none;}
 
   /* OVERLAYS */
@@ -311,7 +320,7 @@
     </div>
     <div style="display:flex;align-items:center;gap:10px;">
       <div class="ujian-timer" id="ujian-timer">--:--</div>
-      <button class="btn-selesai" onclick="confirmSelesai()">✓ Selesai</button>
+      <button class="btn-selesai" id="btn-selesai">✓ Selesai</button>
     </div>
   </div>
   <div class="fs-bar" id="fs-bar">
@@ -588,6 +597,11 @@ function startUjian(){
   else url+='?embedded=true';
 
   document.getElementById('exam-iframe').src=url;
+
+  // Pasang event tombol Selesai — touchend + click agar reliable di HP
+  const bs=document.getElementById("btn-selesai");
+  bs.ontouchend=function(e){e.preventDefault();e.stopPropagation();confirmSelesai();};
+  bs.onclick=function(){confirmSelesai();};
 
   detecting=false; vioCooldown=false; fsCooldown=false;
   setTimeout(enterFs, 800);

@@ -934,7 +934,7 @@
     <div class="watermark" id="watermark-layer"></div>
   </div>
 
-  <div class="fullscreen-reminder" id="fullscreen-bar">
+  <div class="fullscreen-reminder" id="fullscreen-bar" style="display:none;">
     ⚠️ Tetap dalam mode layar penuh
     <button id="btn-go-fullscreen" onclick="enterFullscreen()">Aktifkan Layar Penuh</button>
   </div>
@@ -952,24 +952,31 @@
 </div>
 
 <!-- Terkunci overlay -->
+<!-- Terkunci / Selesai overlay -->
 <div class="locked-overlay" id="locked-overlay">
-  <div class="locked-icon">🔒</div>
+  <div id="locked-icon-el" style="font-size:64px;">🔒</div>
   <div class="locked-title" id="locked-title">Ujian Dikunci</div>
   <div class="locked-desc" id="locked-desc">Kamu telah melebihi batas pelanggaran.</div>
-  <div style="color:rgba(255,255,255,0.4); font-size:12px; margin-top:16px;">Hubungi dosen untuk informasi lebih lanjut.</div>
-  <button id="btn-tutup-ujian" class="btn btn-outline" style="display:none; margin-top:20px; color:#fff; border-color:rgba(255,255,255,0.3);" onclick="tutupUjian()">Tutup Halaman</button>
+  <div id="locked-sub" style="color:rgba(255,255,255,0.4); font-size:12px; margin-top:8px;">Hubungi dosen untuk informasi lebih lanjut.</div>
 </div>
 
-<!-- Modal konfirmasi selesai -->
-<div class="modal-bg" id="modal-selesai">
-  <div class="modal">
-    <div class="modal-title">✅ Selesaikan Ujian?</div>
-    <p class="text-sm text-muted">Pastikan kamu sudah mengisi semua jawaban di Google Form sebelum keluar.</p>
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="batalSelesai()">Kembali</button>
-      <button class="btn btn-success" onclick="selesaiUjian()">Ya, Selesai</button>
-    </div>
+<!-- Halaman Terima Kasih (setelah selesai) -->
+<div class="locked-overlay" id="terimakasih-overlay" style="background: linear-gradient(135deg, #0a2e1a 0%, #0f4d2a 100%);">
+  <div style="font-size:72px; margin-bottom:8px;">🎉</div>
+  <div style="font-size:26px; font-weight:700; color:#fff; margin-bottom:12px;">Ujian Selesai!</div>
+  <div style="font-size:15px; color:rgba(255,255,255,0.8); max-width:300px; text-align:center; line-height:1.6; margin-bottom:8px;">
+    Terima kasih, <span id="tk-nim" style="font-weight:700; color:#4ade80;"></span>!<br>
+    Jawaban kamu sudah tersimpan di Google Form.
   </div>
+  <div style="font-size:13px; color:rgba(255,255,255,0.5); margin-bottom:28px;">Kamu boleh menutup halaman ini.</div>
+  <div style="background:rgba(255,255,255,0.1); border-radius:12px; padding:14px 24px; text-align:center; margin-bottom:20px;">
+    <div style="font-size:11px; color:rgba(255,255,255,0.5); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Pelanggaran tercatat</div>
+    <div id="tk-violations" style="font-size:22px; font-weight:700; color:#fff;">0 kali</div>
+  </div>
+  <button onclick="window.location.href=window.location.href.split('?')[0]"
+    style="background:#4ade80; color:#0a2e1a; border:none; border-radius:10px; padding:14px 32px; font-family:inherit; font-size:15px; font-weight:700; cursor:pointer;">
+    Tutup & Kembali ke Halaman Awal
+  </button>
 </div>
 
 <!-- Modal konfirmasi hentikan ujian -->
@@ -991,7 +998,7 @@
     <p class="text-sm text-muted" style="margin-bottom:8px;">Pastikan kamu sudah menekan tombol <strong>Submit</strong> di Google Form sebelum keluar.</p>
     <p class="text-sm text-muted">Setelah keluar, kamu <strong>tidak bisa kembali</strong> ke halaman ujian.</p>
     <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeModal('modal-selesai')">Kembali ke Ujian</button>
+      <button class="btn btn-outline" onclick="batalSelesai()">Kembali ke Ujian</button>
       <button class="btn btn-success" onclick="selesaiUjian()">Ya, Saya Sudah Submit</button>
     </div>
   </div>
@@ -1457,41 +1464,63 @@ function updateTimerDisplay() {
 
 // ==================== VIOLATION DETECTION ====================
 let violationCooldown = false;
-let ujianStarted = false; // flag: deteksi baru aktif setelah benar-benar masuk ujian
+let ujianStarted = false;
 let fullscreenViolationCooldown = false;
+let lastWidth = window.innerWidth;
+let lastHeight = window.innerHeight;
 
 function setupViolationDetection() {
-  // Beri jeda 4 detik sebelum deteksi aktif
-  // agar animasi masuk / fullscreen request tidak dianggap pelanggaran
+  // Jeda 5 detik sebelum deteksi aktif — beri waktu fullscreen masuk & iframe load
   setTimeout(() => {
     ujianStarted = true;
 
-    // Visibility change: pindah tab / home button
+    // Pindah tab / minimize / home button HP
     document.addEventListener('visibilitychange', onVisibilityChange);
 
-    // Fullscreen change — dengan cooldown khusus
+    // Fullscreen change
     document.addEventListener('fullscreenchange', onFullscreenChange);
     document.addEventListener('webkitfullscreenchange', onFullscreenChange);
 
-    // Resize / split screen — hanya deteksi perubahan besar
+    // Split screen (resize lebar besar)
     lastWidth = window.innerWidth;
     lastHeight = window.innerHeight;
     window.addEventListener('resize', onWindowResize);
 
-    // Keyboard
+    // Keyboard shortcuts & printscreen
     document.addEventListener('keydown', onKeyDown);
 
-    // Right click
+    // Klik kanan
     document.addEventListener('contextmenu', e => e.preventDefault());
 
-  }, 4000);
+    // Deteksi close browser / tab baru via beforeunload
+    window.addEventListener('beforeunload', onBeforeUnload);
+
+    // Deteksi buka tab baru via keyboard (Ctrl+T, Ctrl+N)
+    // sudah di-handle di onKeyDown
+
+  }, 5000);
 }
 
 function onVisibilityChange() {
   if (!ujianStarted || mhsSession.locked) return;
   if (document.hidden) {
-    triggerViolation('Pindah Tab / Keluar Halaman');
+    triggerViolation('Pindah Tab / Minimize / Buka Notifikasi');
   }
+}
+
+function onBeforeUnload(e) {
+  if (!ujianStarted || mhsSession.locked) return;
+  // Log ke state sebelum halaman tutup
+  const waktu = new Date().toLocaleString('id-ID');
+  const logEntry = { waktu, nim: mhsSession.nim, tipe: 'Menutup Browser / Tab' };
+  state.violationLog.push(logEntry);
+  if (!state.peserta[mhsSession.nim]) state.peserta[mhsSession.nim] = { violations: [], status: 'aktif' };
+  state.peserta[mhsSession.nim].violations.push(logEntry);
+  saveState();
+  sendToWebhook(logEntry);
+  // Tampilkan dialog konfirmasi browser
+  e.preventDefault();
+  e.returnValue = 'Kamu sedang dalam ujian. Yakin ingin menutup halaman?';
 }
 
 function onFullscreenChange() {
@@ -1500,7 +1529,6 @@ function onFullscreenChange() {
   const bar = document.getElementById('fullscreen-bar');
   if (!isFullscreen) {
     bar.style.display = 'flex';
-    // Cooldown khusus fullscreen 5 detik agar tap notifikasi tidak double-count
     if (!fullscreenViolationCooldown) {
       fullscreenViolationCooldown = true;
       setTimeout(() => { fullscreenViolationCooldown = false; }, 5000);
@@ -1511,34 +1539,61 @@ function onFullscreenChange() {
   }
 }
 
-let lastWidth = window.innerWidth;
-let lastHeight = window.innerHeight;
 function onWindowResize() {
   if (!ujianStarted || mhsSession.locked) return;
   const currentWidth = window.innerWidth;
-  const currentHeight = window.innerHeight;
-  // Hanya anggap pelanggaran kalau lebar berkurang > 150px (split screen nyata)
   if ((lastWidth - currentWidth) > 150) {
     triggerViolation('Split Screen Terdeteksi');
   }
   lastWidth = currentWidth;
-  lastHeight = currentHeight;
+  lastHeight = window.innerHeight;
 }
 
 function onKeyDown(e) {
-  if (e.key === 'PrintScreen') {
+  // PrintScreen — cegah & catat
+  if (e.key === 'PrintScreen' || e.code === 'PrintScreen') {
     e.preventDefault();
+    e.stopPropagation();
+    // Blackout layar sebentar sebagai countermeasure tambahan
+    blackoutScreen(500);
     triggerViolation('Screenshot (PrintScreen) Terdeteksi');
+    return;
   }
-  if (e.ctrlKey && ['c','v','a','p','s','u'].includes(e.key.toLowerCase())) {
+  // Ctrl+P (print to screenshot), Ctrl+S (save page)
+  if (e.ctrlKey && ['p','s'].includes(e.key.toLowerCase())) {
+    e.preventDefault();
+    triggerViolation('Shortcut Print/Save Terdeteksi');
+    return;
+  }
+  // Ctrl+T (tab baru), Ctrl+N (window baru)
+  if (e.ctrlKey && ['t','n'].includes(e.key.toLowerCase())) {
+    e.preventDefault();
+    triggerViolation('Membuka Tab / Jendela Baru');
+    return;
+  }
+  // Ctrl+W (tutup tab)
+  if (e.ctrlKey && e.key.toLowerCase() === 'w') {
+    e.preventDefault();
+    triggerViolation('Mencoba Menutup Tab');
+    return;
+  }
+  // Blokir lainnya
+  if (e.ctrlKey && ['c','v','a','u'].includes(e.key.toLowerCase())) {
     e.preventDefault();
   }
-  if (['F12','F11'].includes(e.key)) {
-    e.preventDefault();
-  }
-  if (e.key === 'Escape') {
-    e.preventDefault();
-  }
+  if (['F12'].includes(e.key)) { e.preventDefault(); }
+  if (e.key === 'Escape') { e.preventDefault(); }
+
+  // Meta/Win key (buka start menu / mission control)
+  if (e.metaKey) { e.preventDefault(); }
+}
+
+// Blackout sebentar — countermeasure PrintScreen
+function blackoutScreen(ms) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:999999;';
+  document.body.appendChild(overlay);
+  setTimeout(() => overlay.remove(), ms);
 }
 
 function triggerViolation(tipe) {
@@ -1596,6 +1651,7 @@ function selesaiUjian() {
   clearInterval(mhsSession.timerInterval);
   document.removeEventListener('visibilitychange', onVisibilityChange);
   window.removeEventListener('resize', onWindowResize);
+  window.removeEventListener('beforeunload', onBeforeUnload);
 
   if (state.peserta[mhsSession.nim]) {
     state.peserta[mhsSession.nim].status = 'selesai';
@@ -1607,10 +1663,10 @@ function selesaiUjian() {
   if (document.exitFullscreen) document.exitFullscreen();
   else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
 
-  document.getElementById('locked-title').textContent = '✅ Ujian Selesai';
-  document.getElementById('locked-desc').textContent = 'Terima kasih! Jawaban kamu sudah tersimpan di Google Form.';
-  document.getElementById('locked-overlay').classList.add('show');
-  document.getElementById('btn-tutup-ujian').style.display = 'inline-flex';
+  // Tampilkan halaman terima kasih
+  document.getElementById('tk-nim').textContent = mhsSession.nim;
+  document.getElementById('tk-violations').textContent = mhsSession.violations + ' kali';
+  document.getElementById('terimakasih-overlay').classList.add('show');
 }
 
 function dismissViolation() {
@@ -1625,15 +1681,23 @@ function lockUjian(alasan, desc) {
   clearInterval(mhsSession.timerInterval);
 
   document.getElementById('violation-overlay').classList.remove('show');
-
-  const title = alasan === 'waktu' ? '⏰ Waktu Habis' : '🔒 Ujian Dikunci';
-  document.getElementById('locked-title').textContent = title;
-  document.getElementById('locked-desc').textContent = desc || '';
-  document.getElementById('locked-overlay').classList.add('show');
-  document.getElementById('btn-tutup-ujian').style.display = 'none';
-
   document.removeEventListener('visibilitychange', onVisibilityChange);
   window.removeEventListener('resize', onWindowResize);
+  window.removeEventListener('beforeunload', onBeforeUnload);
+
+  if (alasan === 'waktu') {
+    if (document.exitFullscreen) document.exitFullscreen();
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    document.getElementById('tk-nim').textContent = mhsSession.nim;
+    document.getElementById('tk-violations').textContent = mhsSession.violations + ' kali';
+    document.getElementById('terimakasih-overlay').querySelector('[style*="font-size:26px"]').textContent = '⏰ Waktu Ujian Habis!';
+    document.getElementById('terimakasih-overlay').classList.add('show');
+  } else {
+    document.getElementById('locked-title').textContent = '🔒 Ujian Dikunci';
+    document.getElementById('locked-desc').textContent = desc || '';
+    document.getElementById('locked-sub').textContent = 'Hubungi dosen untuk informasi lebih lanjut.';
+    document.getElementById('locked-overlay').classList.add('show');
+  }
 }
 
 // ==================== FULLSCREEN ====================

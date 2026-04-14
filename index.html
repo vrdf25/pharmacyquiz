@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>QuizRx — Secure Exam</title>
+<title>QuizRx — Secure Exam System</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@600&display=swap');
 
   :root {
     --primary: #1a3a5c;
     --primary-light: #2563a8;
-    --accent: #e85d26;
+    --accent: #f0a052;
     --success: #1a7a4a;
     --danger: #c0392b;
     --bg: #f4f6f9;
@@ -21,281 +21,293 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    -webkit-user-select: none;
-    user-select: none;
-    overflow: hidden;
-  }
-
-  /* Proteksi Print */
-  @media print { body { display: none; } }
-
-  .screen { display: none; min-height: 100vh; }
+  body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow: hidden; user-select: none; -webkit-user-select: none; }
+  
+  /* Utilities */
+  .screen { display: none; min-height: 100vh; flex-direction: column; }
   .screen.active { display: flex; }
-
-  /* ===== LOGIN SCREEN ===== */
-  #screen-login {
-    background: linear-gradient(135deg, #0f2544 0%, #1a3a5c 100%);
-    align-items: center; justify-content: center; padding: 20px; flex-direction: column;
-  }
-
-  /* Tombol Dosen di Pojok Kanan Atas */
-  .admin-trigger {
-    position: absolute; top: 20px; right: 20px;
-    color: rgba(255,255,255,0.5); font-size: 11px; cursor: pointer;
-    background: rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 20px;
-    border: 1px solid rgba(255,255,255,0.2); transition: 0.3s;
-    font-weight: 600;
-  }
-  .admin-trigger:hover { background: rgba(255,255,255,0.2); color: #fff; }
-
-  .brand { font-size: 42px; font-weight: 800; color: #fff; letter-spacing: -1.5px; margin-bottom: 30px; }
-  .brand span { color: #f0a052; }
-
-  .login-form-wrap {
-    background: #fff; border-radius: 16px; padding: 32px; width: 100%; max-width: 380px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-  }
-
-  .login-form { display: none; }
-  .login-form.active { display: block; }
-
-  .form-group { margin-bottom: 18px; }
-  label { display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-
-  input {
-    width: 100%; padding: 14px; border: 1.5px solid var(--border); border-radius: 10px;
-    font-size: 15px; background: var(--bg); outline: none; transition: 0.2s;
-  }
-  input:focus { border-color: var(--primary-light); background: #fff; }
-
-  .btn {
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    padding: 14px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; width: 100%; transition: 0.2s;
-  }
-  .btn-primary { background: var(--primary); color: #fff; }
+  .btn { display: flex; align-items: center; justify-content: center; padding: 14px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; font-family: inherit; }
+  .btn-primary { background: var(--primary); color: #fff; width: 100%; }
   .btn-primary:hover { background: var(--primary-light); }
   .btn-danger { background: var(--danger); color: #fff; }
 
+  /* ===== LOGIN SCREEN ===== */
+  #screen-login { background: linear-gradient(135deg, #0f2544 0%, #1a3a5c 100%); align-items: center; justify-content: center; padding: 20px; }
+  .admin-trigger { position: absolute; top: 20px; right: 20px; color: rgba(255,255,255,0.4); font-size: 11px; cursor: pointer; background: rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); font-weight: 600; }
+  .brand { font-size: 48px; font-weight: 800; color: #fff; letter-spacing: -2px; margin-bottom: 30px; }
+  .brand span { color: var(--accent); }
+  .login-card { background: #fff; border-radius: 20px; padding: 35px; width: 100%; max-width: 400px; box-shadow: 0 25px 50px rgba(0,0,0,0.3); }
+  .form-group { margin-bottom: 20px; }
+  label { display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+  input { width: 100%; padding: 14px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 15px; background: var(--bg); outline: none; transition: 0.2s; font-family: inherit; }
+  input:focus { border-color: var(--primary-light); background: #fff; }
+
+  /* ===== DASHBOARD DOSEN ===== */
+  #screen-dosen { background: var(--bg); overflow-y: auto; display: none; }
+  .dosen-header { background: var(--primary); color: #fff; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+  .dosen-container { padding: 20px; max-width: 600px; margin: 0 auto; width: 100%; }
+  .card { background: #fff; border-radius: 15px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--border); }
+  .card-title { font-weight: 700; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+
   /* ===== UJIAN SCREEN ===== */
-  #screen-ujian { flex-direction: column; background: #000; position: fixed; inset: 0; z-index: 9999; }
-  .ujian-topbar { background: #0f2040; height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-  .iframe-container { flex: 1; background: #fff; overflow: hidden; position: relative; }
-  #exam-iframe { width: 100%; height: 100%; border: none; }
+  #screen-ujian { background: #000; position: fixed; inset: 0; z-index: 9999; }
+  .topbar { background: #0f2040; height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  .timer { font-family: 'JetBrains Mono', monospace; color: var(--accent); font-size: 20px; font-weight: 700; }
+  .iframe-area { flex: 1; background: #fff; position: relative; }
+  iframe { width: 100%; height: 100%; border: none; }
 
-  .timer-box { font-family: 'JetBrains Mono'; font-weight: 700; color: #f0a052; font-size: 18px; background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 8px; }
-
-  /* OVERLAYS */
-  .modal-bg {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85);
-    align-items: center; justify-content: center; z-index: 10000; padding: 20px;
-  }
-  .modal-bg.show { display: flex; }
-  .modal { background: #fff; padding: 30px; border-radius: 20px; width: 100%; max-width: 340px; text-align: center; color: var(--text); }
+  /* MODALS */
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; z-index: 10000; padding: 20px; }
+  .overlay.active { display: flex; }
+  .modal { background: #fff; padding: 30px; border-radius: 20px; width: 100%; max-width: 350px; text-align: center; }
 </style>
 </head>
 <body>
 
-<button class="admin-trigger" onclick="switchLoginTab('dosen')">ADMIN MODE</button>
+<button class="admin-trigger" onclick="showForm('dosen')">ADMIN MODE</button>
 
 <div id="screen-login" class="screen active">
   <div class="brand">Quiz<span>Rx</span></div>
-
-  <div class="login-form-wrap">
-    <div id="form-mahasiswa" class="login-form active">
+  
+  <div class="login-card">
+    <div id="form-mahasiswa">
       <div class="form-group">
         <label>Nama Lengkap</label>
-        <input type="text" id="mhs-nama" placeholder="Masukkan Nama Sesuai Absen" autocomplete="off">
+        <input type="text" id="mhs-nama" placeholder="Sesuai Absensi">
       </div>
       <div class="form-group">
         <label>Kode Ujian</label>
-        <input type="text" id="mhs-kode" placeholder="CONTOH: RX-2024" style="text-transform:uppercase">
+        <input type="text" id="mhs-kode" placeholder="Masukkan Kode" style="text-transform: uppercase;">
       </div>
-      <button class="btn btn-primary" onclick="mahasiswaLogin()">MULAI UJIAN</button>
+      <button class="btn btn-primary" onclick="loginMahasiswa()">MASUK UJIAN</button>
     </div>
 
-    <div id="form-dosen" class="login-form">
-      <h3 style="margin-bottom:20px; text-align:center; color: var(--primary)">Dosen Login</h3>
+    <div id="form-dosen" style="display: none;">
+      <h3 style="margin-bottom: 20px; text-align: center;">Dosen Login</h3>
       <div class="form-group">
         <label>Username</label>
-        <input type="text" id="dosen-username">
+        <input type="text" id="admin-user" value="admin">
       </div>
       <div class="form-group">
         <label>Password</label>
-        <input type="password" id="dosen-password">
+        <input type="password" id="admin-pass" value="dosen123">
       </div>
-      <button class="btn btn-primary" onclick="dosenLogin()">Login</button>
-      <button class="btn" style="margin-top:10px; color: var(--text-muted)" onclick="switchLoginTab('mahasiswa')">Kembali ke Mahasiswa</button>
+      <button class="btn btn-primary" onclick="loginDosen()">LOGIN ADMIN</button>
+      <button class="btn" style="margin-top: 10px; color: var(--text-muted);" onclick="showForm('mahasiswa')">Kembali</button>
+    </div>
+  </div>
+</div>
+
+<div id="screen-dosen" class="screen">
+  <div class="dosen-header">
+    <div style="font-weight: 800; font-size: 20px;">QuizRx <span>Admin</span></div>
+    <button onclick="location.reload()" style="background: none; border: 1px solid #fff; color: #fff; padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 12px;">Logout</button>
+  </div>
+  
+  <div class="dosen-container">
+    <div class="card">
+      <div class="card-title">⚙️ Konfigurasi Ujian</div>
+      <div class="form-group">
+        <label>Link Google Form</label>
+        <input type="text" id="set-gform" placeholder="https://docs.google.com/forms/d/...">
+      </div>
+      <div class="form-group">
+        <label>Kode Ujian</label>
+        <input type="text" id="set-kode" placeholder="Misal: UAS-01">
+      </div>
+      <div class="form-group">
+        <label>Durasi (Menit)</label>
+        <input type="number" id="set-durasi" value="90">
+      </div>
+      <button class="btn btn-primary" onclick="simpanSetting()">SIMPAN & AKTIFKAN</button>
+    </div>
+
+    <div class="card" style="background: var(--bg); border-style: dashed;">
+      <p style="font-size: 12px; color: var(--text-muted); text-align: center;">
+        Setelah disimpan, mahasiswa dapat login menggunakan <b>Nama</b> dan <b>Kode</b> yang Anda buat.
+      </p>
     </div>
   </div>
 </div>
 
 <div id="screen-ujian" class="screen">
-  <div class="ujian-topbar">
-    <div class="timer-box" id="ujian-timer">00:00</div>
-    <div style="color:rgba(255,255,255,0.8); font-size:12px; font-weight:600" id="display-nama">NAME</div>
-    <button onclick="triggerModalSelesai()" class="btn btn-danger" style="width:auto; padding:6px 16px; font-size:12px">SELESAI</button>
+  <div class="topbar">
+    <div class="timer" id="timer-display">00:00</div>
+    <div id="user-display" style="color: #fff; font-size: 12px; font-weight: 600;">STUDENT</div>
+    <button class="btn btn-danger" style="padding: 6px 15px; width: auto; font-size: 12px;" onclick="konfirmasiSelesai()">SELESAI</button>
   </div>
-  <div class="iframe-container" id="iframe-holder">
+  <div class="iframe-area" id="iframe-container">
     </div>
 </div>
 
-<div id="violation-overlay" class="modal-bg">
-    <div class="modal">
-        <div style="font-size: 50px; margin-bottom: 10px;">⚠️</div>
-        <h2 style="color:var(--danger)">PELANGGARAN!</h2>
-        <p id="vio-msg" style="margin: 15px 0; font-size:14px; color: var(--text-muted)">Jangan meninggalkan halaman ujian atau membuka notifikasi.</p>
-        <button class="btn btn-primary" onclick="closeViolation()">Kembali ke Ujian</button>
-    </div>
+<div id="modal-vio" class="overlay">
+  <div class="modal">
+    <h1 style="font-size: 50px;">⚠️</h1>
+    <h2 style="color: var(--danger); margin-bottom: 10px;">PELANGGARAN!</h2>
+    <p id="vio-msg" style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">Anda keluar dari aplikasi ujian.</p>
+    <button class="btn btn-primary" onclick="tutupVio()">Kembali ke Ujian</button>
+  </div>
 </div>
 
-<div id="modal-selesai" class="modal-bg">
-    <div class="modal">
-        <div style="font-size: 50px; margin-bottom: 10px;">✅</div>
-        <h3>Kumpulkan Ujian?</h3>
-        <p style="font-size:13px; margin:15px 0; color: var(--text-muted)">Pastikan Anda sudah menekan tombol <b>KIRIM/SUBMIT</b> di dalam Google Form sebelum menekan selesai.</p>
-        <button class="btn btn-primary" style="background:var(--success)" onclick="finalSelesai()">YA, SUDAH SUBMIT</button>
-        <button class="btn" style="margin-top:10px" onclick="closeModalSelesai()">BELUM</button>
-    </div>
+<div id="modal-finish" class="overlay">
+  <div class="modal">
+    <h1 style="font-size: 50px;">✅</h1>
+    <h2 style="margin-bottom: 10px;">Kumpulkan?</h2>
+    <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">Pastikan Anda sudah menekan <b>Kirim/Submit</b> di dalam formulir sebelum keluar.</p>
+    <button class="btn btn-primary" style="background: var(--success);" onclick="selesaiUjian()">YA, SAYA SUDAH SUBMIT</button>
+    <button class="btn" style="margin-top: 10px;" onclick="tutupFinish()">BELUM</button>
+  </div>
 </div>
 
 <script>
-// --- CONFIGURASI ---
-let state = {
-    gform: "https://docs.google.com/forms/d/e/1FAIpQLSfsI_R-Vb_h-Z6l_X8uI-J9I5A-X-YV9S_S/viewform?embedded=true", 
-    kodeUjian: "QUIZ-RX", // Kode untuk testing
-    durasiMenit: 90,
-    strikes: 0
+// --- DATABASE LOKAL SEMENTARA ---
+let config = JSON.parse(localStorage.getItem('quizrx_config')) || {
+  gform: "",
+  kode: "TEST-01",
+  durasi: 90
 };
 
-// --- NAVIGATION ---
-function switchLoginTab(tab) {
-    document.getElementById('form-mahasiswa').classList.toggle('active', tab === 'mahasiswa');
-    document.getElementById('form-dosen').classList.toggle('active', tab === 'dosen');
+let strikeCount = 0;
+let isExamRunning = false;
+
+// --- LOGIN & NAVIGATION ---
+function showForm(target) {
+  document.getElementById('form-mahasiswa').style.display = (target === 'mahasiswa') ? 'block' : 'none';
+  document.getElementById('form-dosen').style.display = (target === 'dosen') ? 'block' : 'none';
 }
 
-// --- LOGIKA MAHASISWA ---
-function mahasiswaLogin() {
-    const nama = document.getElementById('mhs-nama').value.trim();
-    const kodeInput = document.getElementById('mhs-kode').value.trim().toUpperCase();
-
-    if (nama === "" || kodeInput === "") {
-        return alert("Mohon lengkapi Nama dan Kode Ujian!");
-    }
-
-    // Ganti dengan pengecekan kode dari database nantinya
-    if (kodeInput !== state.kodeUjian) {
-        return alert("Kode Ujian Salah!");
-    }
-
-    document.getElementById('display-nama').textContent = nama.toUpperCase();
+function loginDosen() {
+  const user = document.getElementById('admin-user').value;
+  const pass = document.getElementById('admin-pass').value;
+  if(user === "admin" && pass === "dosen123") {
     document.getElementById('screen-login').classList.remove('active');
-    document.getElementById('screen-ujian').classList.add('active');
-
-    mulaiUjian();
+    document.getElementById('screen-dosen').classList.add('active');
+    // Load existing config to fields
+    document.getElementById('set-gform').value = config.gform;
+    document.getElementById('set-kode').value = config.kode;
+    document.getElementById('set-durasi').value = config.durasi;
+  } else {
+    alert("Login Salah!");
+  }
 }
 
+function simpanSetting() {
+  config.gform = document.getElementById('set-gform').value;
+  config.kode = document.getElementById('set-kode').value.toUpperCase();
+  config.durasi = document.getElementById('set-durasi').value;
+  
+  localStorage.setItem('quizrx_config', JSON.stringify(config));
+  alert("Setting Disimpan! Kode Ujian Aktif: " + config.kode);
+}
+
+function loginMahasiswa() {
+  const nama = document.getElementById('mhs-nama').value;
+  const kode = document.getElementById('mhs-kode').value.toUpperCase();
+
+  if(!nama || !kode) return alert("Lengkapi data!");
+  if(kode !== config.kode) return alert("Kode Ujian Salah!");
+  if(!config.gform) return alert("Dosen belum memasukkan link soal!");
+
+  document.getElementById('user-display').textContent = nama.toUpperCase();
+  mulaiUjian();
+}
+
+// --- CORE EXAM LOGIC ---
 function mulaiUjian() {
-    // 1. Injeksi Iframe
-    const container = document.getElementById('iframe-holder');
-    container.innerHTML = `<iframe id="exam-iframe" src="${state.gform}"></iframe>`;
+  document.getElementById('screen-login').classList.remove('active');
+  document.getElementById('screen-ujian').classList.add('active');
+  
+  // Injeksi Iframe Soal
+  document.getElementById('iframe-container').innerHTML = `<iframe src="${config.gform}"></iframe>`;
+  
+  // Fullscreen
+  const el = document.documentElement;
+  if (el.requestFullscreen) el.requestFullscreen();
+  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
 
-    // 2. Fullscreen
-    const el = document.documentElement;
-    if (el.requestFullscreen) el.requestFullscreen();
-    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-
-    // 3. Start Timer
-    startTimer(state.durasiMenit);
-
-    // 4. Deteksi Curang
-    setupSecurity();
+  isExamRunning = true;
+  startTimer(config.durasi);
+  startSecurity();
 }
 
-// --- KEAMANAN & DETEKSI ---
-function setupSecurity() {
-    // Deteksi Pindah Tab / Tutup Browser
-    document.addEventListener("visibilitychange", () => {
-        if (document.hidden) {
-            triggerViolation("Terdeteksi Pindah Aplikasi / Tab.");
-        }
-    });
-
-    // Deteksi Blur (Tarik Notifikasi / Klik di luar)
-    window.onblur = () => {
-        triggerViolation("Terdeteksi Membuka Notifikasi / Menu Lain.");
-    };
-
-    // Deteksi Shortcut (Screenshot & DevTools)
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'PrintScreen' || (e.ctrlKey && e.key === 'p') || e.keyCode === 123) {
-            e.preventDefault();
-            triggerViolation("Aksi Tidak Diperbolehkan!");
-            // Blackout gertakan
-            document.body.style.opacity = '0';
-            setTimeout(() => { document.body.style.opacity = '1'; }, 1000);
-        }
-    });
-}
-
-function triggerViolation(msg) {
-    state.strikes++;
-    if (state.strikes >= 3) {
-        alert("Sesi Anda Terkunci karena 3x Pelanggaran.");
-        location.reload();
-    } else {
-        document.getElementById('vio-msg').innerHTML = `${msg}<br><b style="color:red">Peringatan: ${state.strikes}/3</b>`;
-        document.getElementById('violation-overlay').classList.add('show');
+function startTimer(minutes) {
+  let time = minutes * 60;
+  const display = document.getElementById('timer-display');
+  const timer = setInterval(() => {
+    if(!isExamRunning) { clearInterval(timer); return; }
+    let m = Math.floor(time / 60);
+    let s = time % 60;
+    display.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    if(time <= 0) {
+      clearInterval(timer);
+      alert("Waktu Habis!");
+      location.reload();
     }
+    time--;
+  }, 1000);
 }
 
-function closeViolation() {
-    document.getElementById('violation-overlay').classList.remove('show');
-    // Paksa masuk fullscreen lagi jika keluar
-    if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen();
+// --- SECURITY SYSTEM ---
+function startSecurity() {
+  // Deteksi Pindah Tab / Tutup Browser
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden && isExamRunning) {
+      triggerStrike("Dilarang pindah aplikasi!");
     }
+  });
+
+  // Deteksi Keluar Fokus (Notifikasi/Split Screen)
+  window.onblur = () => {
+    if(isExamRunning) triggerStrike("Dilarang membuka notifikasi/menu lain!");
+  };
+
+  // Blokir Shortcut Screenshot & Print
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'PrintScreen' || (e.ctrlKey && e.key === 'p')) {
+      e.preventDefault();
+      triggerStrike("Screenshot tidak diperbolehkan!");
+      document.body.style.opacity = '0';
+      setTimeout(() => { document.body.style.opacity = '1'; }, 1000);
+    }
+  });
+
+  // Blokir Klik Kanan
+  document.addEventListener('contextmenu', e => e.preventDefault());
 }
 
-// --- TIMER ---
-function startTimer(min) {
-    let sec = min * 60;
-    const display = document.getElementById('ujian-timer');
-    const interval = setInterval(() => {
-        let m = Math.floor(sec / 60);
-        let s = sec % 60;
-        display.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-        
-        if (sec <= 0) {
-            clearInterval(interval);
-            alert("Waktu Ujian Telah Habis!");
-            location.reload();
-        }
-        sec--;
-    }, 1000);
+function triggerStrike(msg) {
+  strikeCount++;
+  if(strikeCount >= 3) {
+    alert("DISKUALIFIKASI: Anda terlalu banyak melanggar.");
+    location.reload();
+  } else {
+    document.getElementById('vio-msg').innerHTML = `${msg}<br><br><b style="color:red">Peringatan: ${strikeCount}/3</b>`;
+    document.getElementById('modal-vio').classList.add('active');
+  }
+}
+
+function tutupVio() {
+  document.getElementById('modal-vio').classList.remove('active');
+  if(!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+  }
 }
 
 // --- SELESAI ---
-function triggerModalSelesai() {
-    document.getElementById('modal-selesai').classList.add('show');
+function konfirmasiSelesai() {
+  document.getElementById('modal-finish').classList.add('active');
 }
 
-function closeModalSelesai() {
-    document.getElementById('modal-selesai').classList.remove('show');
+function tutupFinish() {
+  document.getElementById('modal-finish').classList.remove('active');
 }
 
-function finalSelesai() {
-    alert("Terima kasih! Jawaban Anda telah tersimpan.");
-    location.reload();
+function selesaiUjian() {
+  isExamRunning = false;
+  alert("Terima kasih, ujian telah selesai.");
+  location.reload();
 }
-
-// Matikan Klik Kanan
-document.addEventListener('contextmenu', e => e.preventDefault());
 </script>
+
 </body>
 </html>

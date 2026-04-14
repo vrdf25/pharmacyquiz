@@ -2,222 +2,827 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>QuizRx — Secure System</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>QuizRx</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
   :root {
-    --primary: #1a3a5c; --primary-light: #2c527a; --accent: #f0a052;
-    --bg: #f4f6f9; --surface: #ffffff; --text: #1a2332;
-    --text-muted: #6b7a90; --danger: #c0392b; --success: #1a7a4a;
+    --primary:#1a3a5c; --primary-light:#2563a8; --accent:#e85d26;
+    --success:#1a7a4a; --danger:#c0392b; --warning:#e67e22;
+    --bg:#f4f6f9; --surface:#ffffff; --border:#dde2ea;
+    --text:#1a2332; --text-muted:#6b7a90; --radius:12px;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); height: 100vh; width: 100vw; overflow: hidden; }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+  .screen{display:none;min-height:100vh;}
+  .screen.active{display:flex;}
 
-  /* NAVIGATION */
-  .screen { display: none; height: 100vh; width: 100%; flex-direction: column; align-items: center; justify-content: center; }
-  .screen.active { display: flex; }
+  /* LOGIN */
+  #screen-login{background:linear-gradient(135deg,#0a1a2e 0%,#1a3a5c 60%,#1e4f8a 100%);align-items:center;justify-content:center;padding:20px;flex-direction:column;position:relative;}
+  .dosen-corner{position:absolute;top:16px;right:16px;}
+  .dosen-corner button{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:rgba(255,255,255,0.8);padding:8px 16px;border-radius:8px;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;}
+  .dosen-corner button:hover{background:rgba(255,255,255,0.2);color:#fff;}
+  .login-logo{text-align:center;margin-bottom:36px;}
+  .brand-text{font-size:52px;font-weight:700;color:#fff;letter-spacing:-2px;line-height:1;}
+  .brand-text .rx{color:#f0a052;}
+  .login-card{background:#fff;border-radius:20px;padding:36px 32px;width:100%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,0.35);}
+  .login-card-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:24px;}
 
-  /* LOGIN PAGE */
-  #screen-mhs, #screen-login-admin { background: linear-gradient(135deg, #0f2544 0%, #1a3a5c 100%); }
-  .admin-trigger { position: fixed; top: 20px; right: 20px; color: #fff; font-size: 11px; cursor: pointer; background: rgba(255,255,255,0.1); padding: 8px 15px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.2); z-index: 100; font-weight: 700; }
-  .login-card { background: #fff; border-radius: 24px; padding: 40px; width: 90%; max-width: 400px; box-shadow: 0 25px 50px rgba(0,0,0,0.4); text-align: center; }
-  .brand { font-size: 36px; font-weight: 800; color: var(--primary); margin-bottom: 30px; }
-  .brand span { color: var(--accent); }
+  /* FORMS */
+  .form-group{margin-bottom:18px;}
+  label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;}
+  input[type="text"],input[type="password"],input[type="number"],input[type="url"],select,textarea{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:15px;font-family:inherit;color:var(--text);background:var(--bg);transition:border-color 0.2s;outline:none;-webkit-user-select:text;user-select:text;}
+  input:focus,select:focus{border-color:var(--primary-light);background:#fff;}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:8px;border:none;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;}
+  .btn-primary{background:var(--primary);color:#fff;width:100%;}
+  .btn-primary:hover{background:var(--primary-light);}
+  .btn-accent{background:var(--accent);color:#fff;}
+  .btn-danger{background:var(--danger);color:#fff;}
+  .btn-success{background:var(--success);color:#fff;}
+  .btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text);}
+  .btn-outline:hover{background:var(--bg);}
+  .btn-sm{padding:8px 14px;font-size:13px;}
+  .alert{padding:12px 16px;border-radius:8px;font-size:14px;margin-bottom:16px;border-left:4px solid;}
+  .alert-danger{background:#fee2e2;border-color:var(--danger);color:#7f1d1d;}
+  .alert-success{background:#d1fae5;border-color:var(--success);color:#065f46;}
+  .alert-warning{background:#fef3c7;border-color:var(--warning);color:#78350f;}
+  .alert-info{background:#dbeafe;border-color:var(--primary-light);color:#1e3a5f;}
 
-  /* FORM & BUTTONS */
-  .form-group { text-align: left; margin-bottom: 15px; }
-  label { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 5px; }
-  input { width: 100%; padding: 12px; border: 2px solid #edf2f7; border-radius: 10px; font-size: 15px; outline: none; background: #f8fafc; }
-  .btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; transition: 0.3s; font-size: 14px; }
-  .btn-primary { background: var(--primary); color: #fff; }
-  .btn-danger { background: var(--danger); color: #fff; }
-  .btn-secondary { background: #f1f5f9; color: var(--text); margin-top: 10px; }
+  /* MODAL */
+  .modal-bg{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:2000;align-items:center;justify-content:center;padding:20px;}
+  .modal-bg.show{display:flex;}
+  .modal{background:var(--surface);border-radius:16px;padding:28px;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
+  .modal-title{font-size:18px;font-weight:700;margin-bottom:20px;color:var(--text);}
+  .modal-actions{display:flex;gap:10px;margin-top:20px;}
+  .modal-actions .btn{flex:1;}
 
-  /* ADMIN DASHBOARD */
-  #screen-admin { background: #f4f6f9; justify-content: flex-start; overflow-y: auto; }
-  .admin-nav { width: 100%; background: var(--primary); color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
-  .admin-tabs { display: flex; background: #fff; width: 100%; border-bottom: 1px solid #ddd; }
-  .tab-link { flex: 1; padding: 15px; text-align: center; font-size: 12px; font-weight: 700; cursor: pointer; color: var(--text-muted); border-bottom: 3px solid transparent; }
-  .tab-link.active { color: var(--primary); border-bottom-color: var(--primary); }
-  .admin-content { padding: 20px; width: 100%; max-width: 600px; display: none; }
-  .admin-content.active { display: block; }
-  .card { background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 15px; }
+  /* DOSEN DASHBOARD */
+  #screen-dosen{flex-direction:column;background:var(--bg);}
+  .topbar{background:var(--primary);color:#fff;padding:0 20px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+  .topbar-brand{font-size:20px;font-weight:700;letter-spacing:-0.5px;}
+  .topbar-brand .rx{color:#f0a052;}
+  .topbar-user{display:flex;align-items:center;gap:10px;font-size:13px;}
+  .dosen-content{padding:24px 20px;max-width:800px;margin:0 auto;width:100%;}
+  .nav-tabs{display:flex;gap:4px;background:var(--surface);padding:4px;border-radius:var(--radius);margin-bottom:24px;border:1px solid var(--border);overflow-x:auto;}
+  .nav-tab{padding:8px 16px;border-radius:8px;border:none;background:none;font-family:inherit;font-size:13px;font-weight:600;color:var(--text-muted);cursor:pointer;white-space:nowrap;transition:all 0.2s;}
+  .nav-tab.active{background:var(--primary);color:#fff;}
+  .tab-content{display:none;}
+  .tab-content.active{display:block;}
+  .card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:24px;margin-bottom:16px;}
+  .card-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:500px){.form-row{grid-template-columns:1fr;}}
+  .kode-display{background:var(--primary);color:#fff;border-radius:var(--radius);padding:20px;text-align:center;margin-bottom:16px;}
+  .kode-label{font-size:12px;opacity:0.7;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+  .kode-value{font-family:'JetBrains Mono',monospace;font-size:32px;font-weight:700;letter-spacing:4px;color:#f0a052;}
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;}
+  .badge-active{background:#d1fae5;color:#065f46;}
+  .badge-inactive{background:#fee2e2;color:#7f1d1d;}
+  .badge-done{background:#fef3c7;color:#78350f;}
+  .mhs-list{display:flex;flex-direction:column;gap:8px;}
+  .mhs-item{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg);border-radius:8px;border:1px solid var(--border);}
+  .mhs-nama{font-size:13px;font-weight:700;color:var(--primary);}
+  .vcount{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--danger);}
+  .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+  .stat-card{background:var(--bg);border-radius:8px;padding:14px;text-align:center;border:1px solid var(--border);}
+  .stat-value{font-size:24px;font-weight:700;color:var(--primary);}
+  .stat-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;}
+  .empty-state{text-align:center;padding:40px 20px;color:var(--text-muted);}
+  .empty-icon{font-size:40px;margin-bottom:12px;}
+  .empty-text{font-size:14px;}
+  .ujian-active-banner{background:linear-gradient(135deg,#1a7a4a,#27ae60);color:#fff;padding:12px 16px;border-radius:var(--radius);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .pulse-dot{width:10px;height:10px;border-radius:50%;background:#fff;animation:pulsate 1.5s infinite;flex-shrink:0;}
+  @keyframes pulsate{0%,100%{opacity:1}50%{opacity:0.4}}
+  .text-sm{font-size:13px;}
+  .text-muted{color:var(--text-muted);}
+  .mt-8{margin-top:8px;}
 
-  /* LOG LIST */
-  .log-item { font-size: 12px; padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
-  .log-name { font-weight: 700; color: var(--danger); }
+  /* UJIAN SCREEN */
+  #screen-ujian{flex-direction:column;position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:#0a1628;-webkit-user-select:none;user-select:none;}
+  .ujian-topbar{background:#0f2040;border-bottom:1px solid rgba(255,255,255,0.1);padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:10001;}
+  .ujian-nama{font-size:13px;font-weight:700;color:rgba(255,255,255,0.9);}
+  .vbar{display:flex;align-items:center;gap:6px;}
+  .vdots{display:flex;gap:4px;}
+  .vdot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.2);transition:background 0.3s;}
+  .vdot.filled{background:var(--danger);}
+  .ujian-timer{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;padding:6px 14px;border-radius:8px;background:rgba(255,255,255,0.1);color:#fff;transition:background 0.3s;}
+  .ujian-timer.tw{background:rgba(231,76,60,0.3);color:#ff6b6b;}
+  .ujian-timer.td{background:rgba(231,76,60,0.6);color:#fff;animation:pulsate 1s infinite;}
+  .btn-selesai{background:#1d6fa8;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+  .btn-selesai:active{background:#155a8a;transform:scale(0.97);}
+  .fs-bar{display:none;background:#c0392b;color:#fff;padding:10px 16px;align-items:center;justify-content:center;gap:12px;font-size:13px;flex-shrink:0;}
+  .fs-bar.show{display:flex;}
+  .btn-fs{background:#fff;color:#c0392b;border:none;border-radius:6px;padding:6px 14px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;}
+  .iframe-wrap{flex:1;position:relative;display:flex;flex-direction:column;overflow:hidden;}
+  #exam-iframe{flex:1;width:100%;height:100%;border:none;display:block;}
+  .watermark{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:5;overflow:hidden;}
+  .wm-text{position:absolute;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:rgba(100,150,200,0.12);white-space:nowrap;transform:rotate(-30deg);user-select:none;pointer-events:none;}
 
-  /* EXAM SCREEN */
-  #screen-ujian { background: #000; position: fixed; inset: 0; z-index: 9999; justify-content: flex-start; }
-  .topbar { width: 100%; background: #0f2040; height: 55px; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; color: #fff; }
-  iframe { width: 100%; height: calc(100vh - 55px); border: none; background: #fff; }
+  /* OVERLAYS */
+  .ov{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;align-items:center;justify-content:center;flex-direction:column;gap:16px;text-align:center;padding:24px;}
+  .ov.show{display:flex;}
+  .ov-viol{background:rgba(0,0,0,0.9);}
+  .ov-lock{background:#0a1628;}
+  .ov-thanks{background:linear-gradient(135deg,#0a2e1a,#0f4d2a);}
+  .ov-icon{font-size:64px;}
+  .ov-title{font-size:22px;font-weight:700;color:#fff;}
+  .ov-desc{font-size:14px;color:rgba(255,255,255,0.7);max-width:320px;line-height:1.6;}
+  .ov-sub{font-size:12px;color:rgba(255,255,255,0.4);}
+  .ov-btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:12px 28px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;}
+  .ov-btn-green{background:#4ade80;color:#0a2e1a;border:none;border-radius:10px;padding:14px 32px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;}
+  .ov-stats{background:rgba(255,255,255,0.1);border-radius:12px;padding:14px 24px;text-align:center;}
+  .ov-stats-lbl{font-size:11px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+  .ov-stats-val{font-size:22px;font-weight:700;color:#fff;}
+
+  #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a2332;color:#fff;padding:12px 20px;border-radius:8px;font-size:14px;z-index:999999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;}
 </style>
 </head>
 <body>
 
-<div class="admin-trigger" onclick="navTo('login-admin')">DOSEN PANEL</div>
-
-<div id="screen-mhs" class="screen active">
+<!-- LOGIN -->
+<div id="screen-login" class="screen active">
+  <div class="dosen-corner">
+    <button onclick="showModal('modal-dosen-login')">Dosen / Admin</button>
+  </div>
+  <div class="login-logo">
+    <div class="brand-text">Quiz<span class="rx">Rx</span></div>
+  </div>
   <div class="login-card">
-    <div class="brand">Quiz<span>Rx</span></div>
-    <div class="form-group"><label>Nama Lengkap</label><input type="text" id="mhs-nama" placeholder="Nama Lengkap"></div>
-    <div class="form-group"><label>Kode Ujian</label><input type="text" id="mhs-kode" placeholder="Kode dari Dosen" style="text-transform:uppercase"></div>
-    <button class="btn btn-primary" onclick="mulaiUjian()">MASUK UJIAN</button>
+    <div class="login-card-title">Masuk sebagai Peserta</div>
+    <div class="form-group">
+      <label>Nama Lengkap</label>
+      <input type="text" id="mhs-nama" placeholder="Masukkan nama lengkap kamu" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label>Kode Ujian</label>
+      <input type="text" id="mhs-kode" placeholder="Contoh: MTK2024" autocomplete="off"
+        oninput="this.value=this.value.toUpperCase()" style="text-transform:uppercase;font-weight:700;letter-spacing:2px;">
+    </div>
+    <div id="mhs-err" class="alert alert-danger" style="display:none;"></div>
+    <button class="btn btn-primary" onclick="mahasiswaLogin()">Mulai Ujian →</button>
   </div>
 </div>
 
-<div id="screen-login-admin" class="screen">
-  <div class="login-card">
-    <h3 style="margin-bottom:20px">Dosen Login</h3>
-    <div class="form-group"><label>Password Admin</label><input type="password" id="admin-pass-input"></div>
-    <button class="btn btn-primary" onclick="cekAdmin()">MASUK PANEL</button>
-    <button class="btn btn-secondary" onclick="navTo('mhs')">KEMBALI</button>
-  </div>
-</div>
-
-<div id="screen-admin" class="screen">
-  <div class="admin-nav">
-    <div style="font-weight:800">QuizRx <span>Admin</span></div>
-    <button onclick="location.reload()" style="background:none; border:1px solid #fff; color:#fff; padding:5px 10px; border-radius:8px">Keluar</button>
-  </div>
-  <div class="admin-tabs">
-    <div class="tab-link active" onclick="switchTab(event, 'config')">PENGATURAN</div>
-    <div class="tab-link" onclick="switchTab(event, 'pelanggaran')">PELANGGARAN</div>
-    <div class="tab-link" onclick="switchTab(event, 'password')">AKUN</div>
-  </div>
-
-  <div id="tab-config" class="admin-content active">
-    <div class="card">
-      <h4 style="margin-bottom:15px">Setting Ujian</h4>
-      <div class="form-group"><label>Link Google Form</label><input type="text" id="set-link"></div>
-      <div class="form-group"><label>Kode Ujian</label><input type="text" id="set-kode"></div>
-      <div class="form-group"><label>Durasi (Menit)</label><input type="number" id="set-waktu"></div>
-      <button class="btn btn-primary" onclick="saveConfig()">UPDATE SYSTEM</button>
+<!-- MODAL DOSEN LOGIN -->
+<div class="modal-bg" id="modal-dosen-login">
+  <div class="modal">
+    <div class="modal-title">👨‍🏫 Login Dosen</div>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="d-un" placeholder="Username" autocomplete="off">
     </div>
-  </div>
-
-  <div id="tab-pelanggaran" class="admin-content">
-    <div class="card">
-      <h4 style="margin-bottom:15px">Log Pelanggaran</h4>
-      <div id="log-list"><i>Belum ada data...</i></div>
-      <button class="btn btn-secondary" style="margin-top:10px" onclick="clearLog()">Hapus Log</button>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="d-pw" placeholder="Password">
     </div>
-  </div>
-
-  <div id="tab-password" class="admin-content">
-    <div class="card">
-      <h4 style="margin-bottom:15px">Ganti Password Admin</h4>
-      <div class="form-group"><label>Password Baru</label><input type="password" id="new-pass"></div>
-      <button class="btn btn-danger" onclick="changePass()">GANTI PASSWORD</button>
+    <div id="d-err" class="alert alert-danger" style="display:none;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-dosen-login')">Batal</button>
+      <button class="btn btn-primary" style="width:auto;flex:1;" onclick="dosenLogin()">Masuk</button>
     </div>
   </div>
 </div>
 
-<div id="screen-ujian" class="screen">
+<!-- DOSEN DASHBOARD -->
+<div id="screen-dosen" class="screen">
   <div class="topbar">
-    <div id="timer" style="font-weight:800; color:var(--accent); font-family:monospace">00:00</div>
-    <div id="display-nama" style="font-size:11px">MAHASISWA</div>
-    <button onclick="konfirmasiSelesai()" style="background:var(--danger); color:#fff; border:none; padding:5px 10px; border-radius:8px; font-weight:700">SELESAI</button>
+    <div class="topbar-brand">Quiz<span class="rx">Rx</span></div>
+    <div class="topbar-user">
+      <span id="d-username" style="color:rgba(255,255,255,0.7);font-size:13px;"></span>
+      <button class="btn btn-sm btn-outline" style="color:#fff;border-color:rgba(255,255,255,0.3);" onclick="dosenLogout()">Keluar</button>
+    </div>
   </div>
-  <div id="exam-frame-container"></div>
+  <div class="dosen-content">
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchTab('setting',this)">⚙️ Setting</button>
+      <button class="nav-tab" onclick="switchTab('monitor',this)">📊 Monitor</button>
+      <button class="nav-tab" onclick="switchTab('log',this)">📋 Log</button>
+      <button class="nav-tab" onclick="switchTab('pw',this)">🔒 Password</button>
+    </div>
+
+    <!-- Setting -->
+    <div id="tab-setting" class="tab-content active">
+      <div id="ujian-banner" style="display:none;" class="ujian-active-banner">
+        <div class="pulse-dot"></div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:14px;">Ujian Sedang Berlangsung</div>
+          <div style="font-size:12px;opacity:0.8;" id="banner-kode"></div>
+        </div>
+        <button class="btn btn-sm btn-danger" onclick="showModal('modal-hentikan')">Hentikan</button>
+      </div>
+      <div class="card">
+        <div class="card-title">⚙️ Konfigurasi Ujian</div>
+        <div class="form-group">
+          <label>Link Google Form</label>
+          <input type="url" id="s-gform" placeholder="https://docs.google.com/forms/d/e/.../viewform">
+          <div class="text-sm text-muted mt-8">Pastikan Google Form bisa diakses publik (Anyone with the link).</div>
+        </div>
+        <div class="form-group">
+          <label>Kode Ujian</label>
+          <input type="text" id="s-kode" placeholder="Contoh: MTK2024" oninput="this.value=this.value.toUpperCase()" style="text-transform:uppercase;font-weight:700;letter-spacing:2px;">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Durasi (menit)</label>
+            <input type="number" id="s-durasi" value="90" min="5" max="300">
+          </div>
+          <div class="form-group">
+            <label>Batas Pelanggaran</label>
+            <input type="number" id="s-batas" value="3" min="1" max="10">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Google Sheets Webhook URL (opsional)</label>
+          <input type="url" id="s-webhook" placeholder="https://script.google.com/macros/s/...">
+        </div>
+        <button class="btn btn-primary" onclick="mulaiUjian()">🚀 Aktifkan Ujian</button>
+      </div>
+      <div id="kode-card" class="card" style="display:none;">
+        <div class="kode-display">
+          <div class="kode-label">Kode Ujian Aktif</div>
+          <div class="kode-value" id="kode-val"></div>
+        </div>
+        <div class="text-sm text-muted" style="text-align:center;margin-top:8px;">Bagikan kode ini ke peserta</div>
+      </div>
+      <div id="link-card" class="card" style="display:none;">
+        <div class="card-title">🔗 Link untuk Peserta</div>
+        <div class="alert alert-success">Bagikan link ini ke peserta. Buka link → masukkan nama &amp; kode → mulai ujian.</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="text" id="link-val" readonly style="font-size:11px;font-family:'JetBrains Mono',monospace;flex:1;">
+          <button class="btn btn-primary" style="white-space:nowrap;flex-shrink:0;width:auto;" onclick="copyLink()">📋 Salin</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Monitor -->
+    <div id="tab-monitor" class="tab-content">
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-value" id="st-total">0</div><div class="stat-label">Total</div></div>
+        <div class="stat-card"><div class="stat-value" id="st-aktif" style="color:var(--success);">0</div><div class="stat-label">Sedang Ujian</div></div>
+        <div class="stat-card"><div class="stat-value" id="st-vio" style="color:var(--danger);">0</div><div class="stat-label">Pelanggaran</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
+          <span>📋 Daftar Peserta</span>
+          <button class="btn btn-sm btn-outline" onclick="refreshMonitor()">🔄 Refresh</button>
+        </div>
+        <div id="mon-container"><div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Belum ada peserta.</div></div></div>
+      </div>
+    </div>
+
+    <!-- Log -->
+    <div id="tab-log" class="tab-content">
+      <div class="card">
+        <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
+          <span>📋 Log Pelanggaran</span>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-sm btn-outline" onclick="clearLog()">🗑️ Hapus</button>
+            <button class="btn btn-sm btn-success" onclick="downloadCSV()">⬇️ CSV</button>
+          </div>
+        </div>
+        <div id="log-container"><div class="empty-state"><div class="empty-icon">✅</div><div class="empty-text">Belum ada pelanggaran.</div></div></div>
+      </div>
+    </div>
+
+    <!-- Password -->
+    <div id="tab-pw" class="tab-content">
+      <div class="card">
+        <div class="card-title">🔒 Ganti Password</div>
+        <div class="form-group"><label>Password Lama</label><input type="password" id="pw-lama"></div>
+        <div class="form-group"><label>Password Baru (min 6 karakter)</label><input type="password" id="pw-baru"></div>
+        <div class="form-group"><label>Konfirmasi Password Baru</label><input type="password" id="pw-konfirm"></div>
+        <div id="pw-err" class="alert alert-danger" style="display:none;"></div>
+        <div id="pw-ok" class="alert alert-success" style="display:none;"></div>
+        <button class="btn btn-primary" onclick="gantiPassword()">Simpan</button>
+      </div>
+    </div>
+  </div>
 </div>
+
+<!-- UJIAN SCREEN -->
+<div id="screen-ujian" class="screen">
+  <div class="ujian-topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="ujian-nama" id="ujian-nama"></div>
+      <div class="vbar">
+        <span style="font-size:11px;color:rgba(255,255,255,0.4);">Pelanggaran:</span>
+        <div class="vdots" id="vdots"></div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="ujian-timer" id="ujian-timer">--:--</div>
+      <button class="btn-selesai" onclick="confirmSelesai()">✓ Selesai</button>
+    </div>
+  </div>
+  <div class="fs-bar" id="fs-bar">
+    ⚠️ Mode layar penuh dinonaktifkan — ini tercatat sebagai pelanggaran.
+    <button class="btn-fs" onclick="enterFs()">Aktifkan Kembali</button>
+  </div>
+  <div class="iframe-wrap">
+    <iframe id="exam-iframe"
+      allow="autoplay"
+      sandbox="allow-forms allow-same-origin allow-scripts allow-popups allow-top-navigation-by-user-activation">
+    </iframe>
+    <div class="watermark" id="wm-layer"></div>
+  </div>
+</div>
+
+<!-- OV: Pelanggaran -->
+<div class="ov ov-viol" id="ov-viol">
+  <div class="ov-icon">⚠️</div>
+  <div class="ov-title" id="vio-title">Pelanggaran Terdeteksi!</div>
+  <div class="ov-desc" id="vio-desc"></div>
+  <div class="ov-sub" id="vio-count"></div>
+  <button class="ov-btn" onclick="dismissVio()">Kembali ke Ujian</button>
+</div>
+
+<!-- OV: Dikunci -->
+<div class="ov ov-lock" id="ov-lock">
+  <div class="ov-icon">🔒</div>
+  <div class="ov-title" id="lock-title">Ujian Dikunci</div>
+  <div class="ov-desc" id="lock-desc"></div>
+  <div class="ov-sub">Hubungi dosen untuk informasi lebih lanjut.</div>
+</div>
+
+<!-- OV: Terima Kasih -->
+<div class="ov ov-thanks" id="ov-thanks">
+  <div class="ov-icon" id="tk-icon">🎉</div>
+  <div class="ov-title" id="tk-title">Ujian Selesai!</div>
+  <div class="ov-desc" id="tk-desc"></div>
+  <div class="ov-stats">
+    <div class="ov-stats-lbl">Pelanggaran tercatat</div>
+    <div class="ov-stats-val" id="tk-vio">0 kali</div>
+  </div>
+  <div class="ov-sub">Kamu boleh menutup halaman ini.</div>
+  <button class="ov-btn-green" onclick="window.location.href=window.location.href.split('?')[0]">Tutup &amp; Kembali</button>
+</div>
+
+<!-- MODAL Hentikan -->
+<div class="modal-bg" id="modal-hentikan">
+  <div class="modal">
+    <div class="modal-title">⚠️ Hentikan Ujian?</div>
+    <p class="text-sm text-muted">Semua sesi peserta akan dikunci. Tidak dapat dibatalkan.</p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-hentikan')">Batal</button>
+      <button class="btn btn-danger" onclick="hentikanUjian()">Ya, Hentikan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL Selesai -->
+<div class="modal-bg" id="modal-selesai">
+  <div class="modal">
+    <div class="modal-title">✅ Selesai Mengerjakan?</div>
+    <p class="text-sm text-muted" style="margin-bottom:8px;">Pastikan sudah klik <strong>Submit</strong> di Google Form sebelum keluar.</p>
+    <p class="text-sm text-muted">Setelah keluar, kamu <strong>tidak bisa kembali</strong>.</p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="batalSelesai()">Kembali ke Ujian</button>
+      <button class="btn btn-success" onclick="selesaiUjian()">Ya, Sudah Submit</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
 
 <script>
-let db = JSON.parse(localStorage.getItem('quiz_db')) || {
-  link: "", kode: "RX-01", waktu: 60, pass: "dosen123", logs: []
+// ===================== STATE =====================
+let creds = {u:'admin', p:'dosen123'};
+let state = {
+  aktif:false, gform:'', kode:'', durasi:90, batas:3, webhook:'', link:'',
+  peserta:{}, logs:[]
 };
+let mhs = { nama:'', vio:0, timer:null, sisa:0, locked:false };
+let detecting=false, vioCooldown=false, fsCooldown=false, lastW=window.innerWidth;
 
-let strike = 0; let isExam = false; let currentMhs = "";
-
-function navTo(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-' + id).classList.add('active');
+function loadState(){
+  try{
+    const s=localStorage.getItem('qrx_s'); if(s) state={...state,...JSON.parse(s)};
+    const c=localStorage.getItem('qrx_c'); if(c) creds={...creds,...JSON.parse(c)};
+  }catch(e){}
 }
+function saveState(){ try{localStorage.setItem('qrx_s',JSON.stringify(state));}catch(e){} }
 
-function switchTab(e, tabId) {
-  document.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.admin-content').forEach(c => c.classList.remove('active'));
-  e.target.classList.add('active');
-  document.getElementById('tab-' + tabId).classList.add('active');
-  if(tabId === 'pelanggaran') renderLogs();
+// ===================== LOGIN =====================
+function dosenLogin(){
+  const u=document.getElementById('d-un').value.trim();
+  const p=document.getElementById('d-pw').value;
+  const err=document.getElementById('d-err');
+  if(u===creds.u && p===creds.p){
+    err.style.display='none';
+    closeModal('modal-dosen-login');
+    document.getElementById('d-username').textContent=u;
+    showScreen('dosen');
+    loadDashboard();
+  } else {
+    err.style.display='block'; err.textContent='Username atau password salah.';
+  }
 }
+function dosenLogout(){ showScreen('login'); }
 
-// LOGIKA ADMIN
-function cekAdmin() {
-  if(document.getElementById('admin-pass-input').value === db.pass) {
-    navTo('admin');
-    document.getElementById('set-link').value = db.link;
-    document.getElementById('set-kode').value = db.kode;
-    document.getElementById('set-waktu').value = db.waktu;
-  } else { alert("Password Salah!"); }
+function mahasiswaLogin(){
+  const nama=document.getElementById('mhs-nama').value.trim();
+  const kode=document.getElementById('mhs-kode').value.trim().toUpperCase();
+  const err=document.getElementById('mhs-err');
+  if(!nama){ showErr(err,'Nama lengkap tidak boleh kosong.'); return; }
+  if(!kode){ showErr(err,'Kode ujian tidak boleh kosong.'); return; }
+  if(!state.aktif){ showErr(err,'Tidak ada ujian aktif saat ini. Hubungi dosen.'); return; }
+  if(kode!==state.kode){ showErr(err,'Kode ujian salah. Periksa kembali.'); return; }
+  if(state.peserta[nama]&&state.peserta[nama].status==='dikunci'){
+    showErr(err,'Akun kamu dikunci karena pelanggaran. Hubungi dosen.'); return;
+  }
+  err.style.display='none';
+  if(!state.peserta[nama]) state.peserta[nama]={vio:[],status:'aktif',t:new Date().toISOString()};
+  else state.peserta[nama].status='aktif';
+  saveState();
+  mhs.nama=nama; mhs.vio=state.peserta[nama].vio.length;
+  mhs.locked=false; mhs.sisa=state.durasi*60;
+  startUjian();
 }
+function showErr(el,msg){ el.style.display='block'; el.textContent=msg; }
 
-function saveConfig() {
-  db.link = document.getElementById('set-link').value;
-  db.kode = document.getElementById('set-kode').value.toUpperCase();
-  db.waktu = document.getElementById('set-waktu').value;
-  saveDB(); alert("Berhasil diupdate!");
-}
-
-function changePass() {
-  const p = document.getElementById('new-pass').value;
-  if(p.length < 4) return alert("Minimal 4 karakter!");
-  db.pass = p; saveDB(); alert("Password diganti!");
-}
-
-function renderLogs() {
-  const container = document.getElementById('log-list');
-  container.innerHTML = db.logs.length ? db.logs.map(l => `<div class="log-item"><span>${l.time}</span><span class="log-name">${l.nama}</span><span>${l.type}</span></div>`).reverse().join('') : "<i>Belum ada pelanggaran.</i>";
-}
-
-function clearLog() { db.logs = []; saveDB(); renderLogs(); }
-function saveDB() { localStorage.setItem('quiz_db', JSON.stringify(db)); }
-
-// LOGIKA MAHASISWA
-function mulaiUjian() {
-  const nama = document.getElementById('mhs-nama').value;
-  const kode = document.getElementById('mhs-kode').value.toUpperCase();
-  if(!nama || kode !== db.kode) return alert("Data atau Kode Salah!");
-  if(!db.link) return alert("Link soal belum diatur Dosen!");
-
-  currentMhs = nama;
-  document.getElementById('display-nama').textContent = nama.toUpperCase();
-  document.getElementById('exam-frame-container').innerHTML = `<iframe src="${db.link}"></iframe>`;
-  navTo('ujian');
-  
-  if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
-  isExam = true; strike = 0;
-  startTimer(db.waktu);
-  
-  window.onblur = () => {
-    if(isExam) {
-      strike++;
-      db.logs.push({ time: new Date().toLocaleTimeString(), nama: currentMhs, type: `Keluar/Blur (${strike})` });
-      saveDB();
-      if(strike >= 3) { alert("Diskualifikasi! 3x Pelanggaran."); location.reload(); }
-      else alert(`PERINGATAN ${strike}/3! Jangan keluar halaman.`);
+// ===================== DASHBOARD =====================
+function loadDashboard(){
+  if(state.gform) document.getElementById('s-gform').value=state.gform;
+  if(state.kode) document.getElementById('s-kode').value=state.kode;
+  if(state.durasi) document.getElementById('s-durasi').value=state.durasi;
+  if(state.batas) document.getElementById('s-batas').value=state.batas;
+  if(state.webhook) document.getElementById('s-webhook').value=state.webhook;
+  if(state.aktif){
+    document.getElementById('ujian-banner').style.display='flex';
+    document.getElementById('banner-kode').textContent='Kode: '+state.kode;
+    document.getElementById('kode-card').style.display='block';
+    document.getElementById('kode-val').textContent=state.kode;
+    if(state.link){
+      document.getElementById('link-card').style.display='block';
+      document.getElementById('link-val').value=state.link;
     }
-  };
+  }
+  refreshMonitor(); renderLog();
 }
 
-function startTimer(min) {
-  let sec = min * 60;
-  const timerEl = document.getElementById('timer');
-  const clock = setInterval(() => {
-    if(!isExam) { clearInterval(clock); return; }
-    let m = Math.floor(sec / 60), s = sec % 60;
-    timerEl.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-    if(sec <= 0) { clearInterval(clock); alert("Waktu Habis!"); location.reload(); }
-    sec--;
-  }, 1000);
+function switchTab(tab,el){
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+  if(tab==='monitor') refreshMonitor();
+  if(tab==='log') renderLog();
 }
 
-function konfirmasiSelesai() {
-  if(confirm("Yakin Selesai? Pastikan sudah Submit di Google Form.")) { isExam = false; location.reload(); }
+function mulaiUjian(){
+  const gform=document.getElementById('s-gform').value.trim();
+  const kode=document.getElementById('s-kode').value.trim().toUpperCase();
+  const durasi=parseInt(document.getElementById('s-durasi').value);
+  const batas=parseInt(document.getElementById('s-batas').value);
+  const webhook=document.getElementById('s-webhook').value.trim();
+  if(!gform){showToast('❌ Link Google Form harus diisi!');return;}
+  if(!kode){showToast('❌ Kode ujian harus diisi!');return;}
+  if(!durasi||durasi<5){showToast('❌ Durasi minimal 5 menit!');return;}
+  state.aktif=true; state.gform=gform; state.kode=kode;
+  state.durasi=durasi; state.batas=batas; state.webhook=webhook;
+  state.peserta={}; state.logs=[];
+  const cfg={aktif:1,kode,gform,durasi,batas,webhook};
+  const enc=btoa(unescape(encodeURIComponent(JSON.stringify(cfg))));
+  const base=window.location.href.split('?')[0].split('#')[0];
+  state.link=base+'?ujian='+enc;
+  saveState();
+  document.getElementById('ujian-banner').style.display='flex';
+  document.getElementById('banner-kode').textContent='Kode: '+kode;
+  document.getElementById('kode-card').style.display='block';
+  document.getElementById('kode-val').textContent=kode;
+  document.getElementById('link-card').style.display='block';
+  document.getElementById('link-val').value=state.link;
+  showToast('✅ Ujian aktif! Bagikan link ke peserta.');
 }
 
-document.addEventListener('contextmenu', e => e.preventDefault());
+function hentikanUjian(){
+  state.aktif=false;
+  Object.keys(state.peserta).forEach(n=>{ if(state.peserta[n].status==='aktif') state.peserta[n].status='selesai'; });
+  saveState();
+  document.getElementById('ujian-banner').style.display='none';
+  document.getElementById('kode-card').style.display='none';
+  document.getElementById('link-card').style.display='none';
+  closeModal('modal-hentikan');
+  showToast('🛑 Ujian dihentikan.');
+}
+
+function refreshMonitor(){
+  const p=state.peserta; const ns=Object.keys(p);
+  document.getElementById('st-total').textContent=ns.length;
+  document.getElementById('st-aktif').textContent=ns.filter(n=>p[n].status==='aktif').length;
+  document.getElementById('st-vio').textContent=ns.reduce((a,n)=>a+(p[n].vio||[]).length,0);
+  const c=document.getElementById('mon-container');
+  if(!ns.length){c.innerHTML='<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Belum ada peserta.</div></div>';return;}
+  c.innerHTML='<div class="mhs-list">'+ns.map(n=>{
+    const pp=p[n]; const vc=(pp.vio||[]).length;
+    const badge=pp.status==='aktif'?'<span class="badge badge-active">● Aktif</span>':pp.status==='dikunci'?'<span class="badge badge-inactive">🔒 Dikunci</span>':'<span class="badge badge-done">✓ Selesai</span>';
+    return `<div class="mhs-item"><div><div class="mhs-nama">${n}</div><div>${badge}</div></div><span class="vcount">${vc}x pelanggaran</span></div>`;
+  }).join('')+'</div>';
+}
+
+function renderLog(){
+  const c=document.getElementById('log-container');
+  if(!state.logs.length){c.innerHTML='<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-text">Belum ada pelanggaran.</div></div>';return;}
+  c.innerHTML=`<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:13px;">
+    <thead><tr style="background:var(--bg);">
+      <th style="padding:10px 12px;color:var(--text-muted);font-weight:600;border-bottom:1px solid var(--border);text-align:left;">Waktu</th>
+      <th style="padding:10px 12px;color:var(--text-muted);font-weight:600;border-bottom:1px solid var(--border);text-align:left;">Nama</th>
+      <th style="padding:10px 12px;color:var(--text-muted);font-weight:600;border-bottom:1px solid var(--border);text-align:left;">Pelanggaran</th>
+    </tr></thead>
+    <tbody>${state.logs.map(l=>`<tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:10px 12px;color:var(--text-muted);">${l.waktu}</td>
+      <td style="padding:10px 12px;font-weight:700;color:var(--primary);">${l.nama}</td>
+      <td style="padding:10px 12px;color:var(--danger);font-weight:600;">${l.tipe}</td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+function clearLog(){ state.logs=[]; saveState(); renderLog(); showToast('🗑️ Log dihapus.'); }
+
+function downloadCSV(){
+  if(!state.logs.length){showToast('❌ Tidak ada log.');return;}
+  let csv='Waktu,Nama,Jenis Pelanggaran\n';
+  state.logs.forEach(l=>{ csv+=`"${l.waktu}","${l.nama}","${l.tipe}"\n`; });
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+  a.download=`log-${state.kode}-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); showToast('✅ CSV didownload!');
+}
+
+function gantiPassword(){
+  const lama=document.getElementById('pw-lama').value;
+  const baru=document.getElementById('pw-baru').value;
+  const konfirm=document.getElementById('pw-konfirm').value;
+  const errEl=document.getElementById('pw-err'); const okEl=document.getElementById('pw-ok');
+  errEl.style.display='none'; okEl.style.display='none';
+  if(lama!==creds.p){errEl.style.display='block';errEl.textContent='Password lama salah.';return;}
+  if(baru.length<6){errEl.style.display='block';errEl.textContent='Password baru minimal 6 karakter.';return;}
+  if(baru!==konfirm){errEl.style.display='block';errEl.textContent='Konfirmasi tidak cocok.';return;}
+  creds.p=baru; localStorage.setItem('qrx_c',JSON.stringify(creds));
+  ['pw-lama','pw-baru','pw-konfirm'].forEach(id=>document.getElementById(id).value='');
+  okEl.style.display='block'; okEl.textContent='✅ Password berhasil diubah!';
+}
+
+function copyLink(){
+  const val=document.getElementById('link-val').value;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(val).then(()=>showToast('✅ Link disalin!'));
+  } else {
+    const el=document.getElementById('link-val'); el.select(); document.execCommand('copy'); showToast('✅ Link disalin!');
+  }
+}
+
+// ===================== UJIAN =====================
+function startUjian(){
+  showScreen('ujian');
+  document.getElementById('ujian-nama').textContent=mhs.nama;
+  renderWm(); renderVdots(); updateTimer();
+
+  // Proses URL Google Form — pastikan bisa diembed
+  let url=state.gform;
+  // Hapus /edit jika ada
+  url=url.replace(/\/edit.*$/, '');
+  // Pastikan pakai /viewform
+  if(!url.includes('/viewform')) url=url.replace(/\/?$/, '/viewform');
+  // Tambah embedded=true agar GForm tampil tanpa header Google
+  if(url.includes('?')) url+='&embedded=true';
+  else url+='?embedded=true';
+
+  document.getElementById('exam-iframe').src=url;
+
+  detecting=false; vioCooldown=false; fsCooldown=false;
+  setTimeout(enterFs, 800);
+  setTimeout(()=>{ detecting=true; lastW=window.innerWidth; }, 5000);
+
+  setupDetect();
+  startTimer();
+}
+
+function renderWm(){
+  const layer=document.getElementById('wm-layer'); layer.innerHTML='';
+  const pos=[
+    {t:'8%',l:'5%'},{t:'8%',l:'42%'},{t:'8%',l:'75%'},
+    {t:'28%',l:'18%'},{t:'28%',l:'58%'},
+    {t:'48%',l:'5%'},{t:'48%',l:'42%'},{t:'48%',l:'75%'},
+    {t:'68%',l:'18%'},{t:'68%',l:'58%'},
+    {t:'85%',l:'5%'},{t:'85%',l:'42%'},
+  ];
+  pos.forEach(p=>{
+    const el=document.createElement('div');
+    el.className='wm-text'; el.textContent=mhs.nama;
+    el.style.top=p.t; el.style.left=p.l;
+    layer.appendChild(el);
+  });
+}
+
+function renderVdots(){
+  const c=document.getElementById('vdots'); c.innerHTML='';
+  for(let i=0;i<state.batas;i++){
+    const d=document.createElement('div');
+    d.className='vdot'+(i<mhs.vio?' filled':'');
+    c.appendChild(d);
+  }
+}
+
+function startTimer(){
+  clearInterval(mhs.timer);
+  mhs.timer=setInterval(()=>{
+    if(mhs.locked){clearInterval(mhs.timer);return;}
+    mhs.sisa--;
+    if(mhs.sisa<=0){clearInterval(mhs.timer);endUjian('waktu');return;}
+    updateTimer();
+  },1000);
+}
+
+function updateTimer(){
+  const el=document.getElementById('ujian-timer');
+  const m=Math.floor(mhs.sisa/60); const s=mhs.sisa%60;
+  el.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  el.className='ujian-timer';
+  if(mhs.sisa<=60) el.classList.add('td');
+  else if(mhs.sisa<=300) el.classList.add('tw');
+}
+
+// ===================== DETECTION =====================
+function setupDetect(){
+  document.addEventListener('visibilitychange',onVis);
+  document.addEventListener('fullscreenchange',onFs);
+  document.addEventListener('webkitfullscreenchange',onFs);
+  window.addEventListener('resize',onResize);
+  document.addEventListener('keydown',onKey,true);
+  document.addEventListener('contextmenu',e=>e.preventDefault());
+  window.addEventListener('beforeunload',onUnload);
+}
+
+function removeDetect(){
+  document.removeEventListener('visibilitychange',onVis);
+  document.removeEventListener('fullscreenchange',onFs);
+  document.removeEventListener('webkitfullscreenchange',onFs);
+  window.removeEventListener('resize',onResize);
+  document.removeEventListener('keydown',onKey,true);
+  window.removeEventListener('beforeunload',onUnload);
+}
+
+function onVis(){ if(!detecting||mhs.locked) return; if(document.hidden) trigger('Pindah Tab / Minimize / Home Button'); }
+
+function onFs(){
+  if(!detecting||mhs.locked) return;
+  const isFs=!!(document.fullscreenElement||document.webkitFullscreenElement);
+  const bar=document.getElementById('fs-bar');
+  if(!isFs){
+    bar.classList.add('show');
+    if(!fsCooldown){ fsCooldown=true; setTimeout(()=>{fsCooldown=false;},5000); trigger('Keluar dari Mode Layar Penuh'); }
+  } else { bar.classList.remove('show'); }
+}
+
+function onResize(){
+  if(!detecting||mhs.locked) return;
+  const w=window.innerWidth;
+  if((lastW-w)>150) trigger('Split Screen Terdeteksi');
+  lastW=w;
+}
+
+function onKey(e){
+  if(!detecting) return;
+  if(e.key==='PrintScreen'||e.code==='PrintScreen'){
+    e.preventDefault(); e.stopImmediatePropagation();
+    blackout(800); trigger('Screenshot (PrintScreen) Terdeteksi'); return;
+  }
+  if(e.ctrlKey&&(e.key==='p'||e.key==='P')){ e.preventDefault(); trigger('Shortcut Print Terdeteksi'); return; }
+  if(e.ctrlKey&&(e.key==='t'||e.key==='T')){ e.preventDefault(); trigger('Membuka Tab Baru'); return; }
+  if(e.ctrlKey&&(e.key==='n'||e.key==='N')){ e.preventDefault(); trigger('Membuka Jendela Baru'); return; }
+  if(e.ctrlKey&&(e.key==='w'||e.key==='W')){ e.preventDefault(); trigger('Mencoba Menutup Tab'); return; }
+  if(e.metaKey){ e.preventDefault(); return; }
+  if(e.key==='F12'){ e.preventDefault(); return; }
+  if(e.key==='Escape'){ e.preventDefault(); return; }
+  if(e.ctrlKey&&['s','u','a','c'].includes(e.key.toLowerCase())) e.preventDefault();
+}
+
+function onUnload(e){
+  if(!detecting||mhs.locked) return;
+  const waktu=new Date().toLocaleString('id-ID');
+  const log={waktu,nama:mhs.nama,tipe:'Menutup Browser / Tab'};
+  state.logs.push(log);
+  if(state.peserta[mhs.nama]) state.peserta[mhs.nama].vio.push(log);
+  saveState(); sendWh(log);
+  e.preventDefault(); e.returnValue='Kamu sedang mengerjakan ujian!';
+}
+
+function blackout(ms){
+  const el=document.createElement('div');
+  el.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:9999999;pointer-events:none;';
+  document.body.appendChild(el); setTimeout(()=>el.remove(),ms);
+}
+
+function trigger(tipe){
+  if(mhs.locked||vioCooldown) return;
+  vioCooldown=true; setTimeout(()=>{vioCooldown=false;},3000);
+  mhs.vio++;
+  const waktu=new Date().toLocaleString('id-ID');
+  const log={waktu,nama:mhs.nama,tipe};
+  state.logs.push(log);
+  if(!state.peserta[mhs.nama]) state.peserta[mhs.nama]={vio:[],status:'aktif'};
+  state.peserta[mhs.nama].vio.push(log);
+  saveState(); sendWh(log); renderVdots();
+  if(mhs.vio>=state.batas){
+    state.peserta[mhs.nama].status='dikunci'; saveState(); endUjian('dikunci'); return;
+  }
+  const sisa=state.batas-mhs.vio;
+  document.getElementById('vio-title').textContent='⚠️ Pelanggaran Terdeteksi!';
+  document.getElementById('vio-desc').textContent=tipe;
+  document.getElementById('vio-count').textContent=`Pelanggaran ke-${mhs.vio}. Sisa toleransi: ${sisa} kali.`;
+  document.getElementById('ov-viol').classList.add('show');
+}
+
+function dismissVio(){
+  document.getElementById('ov-viol').classList.remove('show');
+  enterFs();
+}
+
+// ===================== SELESAI =====================
+function confirmSelesai(){
+  detecting=false;
+  showModal('modal-selesai');
+}
+
+function batalSelesai(){
+  closeModal('modal-selesai');
+  detecting=true; enterFs();
+}
+
+function selesaiUjian(){ closeModal('modal-selesai'); endUjian('selesai'); }
+
+function endUjian(alasan){
+  mhs.locked=true; detecting=false;
+  clearInterval(mhs.timer); removeDetect();
+  if(state.peserta[mhs.nama]){
+    state.peserta[mhs.nama].status=alasan==='dikunci'?'dikunci':'selesai';
+  }
+  saveState();
+  if(document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+  else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
+
+  if(alasan==='dikunci'){
+    document.getElementById('lock-title').textContent='🔒 Ujian Dikunci';
+    document.getElementById('lock-desc').textContent=`Kamu melanggar ${mhs.vio} kali. Ujian dikunci otomatis.`;
+    document.getElementById('ov-lock').classList.add('show');
+  } else {
+    const isW=alasan==='waktu';
+    document.getElementById('tk-icon').textContent=isW?'⏰':'🎉';
+    document.getElementById('tk-title').textContent=isW?'Waktu Habis!':'Ujian Selesai!';
+    document.getElementById('tk-desc').textContent=isW
+      ?`Waktu ujian kamu habis, ${mhs.nama}.`
+      :`Terima kasih, ${mhs.nama}! Jawaban sudah tersimpan di Google Form.`;
+    document.getElementById('tk-vio').textContent=mhs.vio+' kali';
+    document.getElementById('ov-thanks').classList.add('show');
+  }
+}
+
+// ===================== FULLSCREEN =====================
+function enterFs(){
+  try{
+    const el=document.documentElement;
+    if(el.requestFullscreen) el.requestFullscreen();
+    else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  }catch(e){}
+}
+
+// ===================== WEBHOOK =====================
+function sendWh(log){
+  if(!state.webhook) return;
+  fetch(state.webhook,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({waktu:log.waktu,nama:log.nama,tipe:log.tipe,kode:state.kode})
+  }).catch(()=>{});
+}
+
+// ===================== URL PARAM =====================
+function readUrl(){
+  try{
+    const p=new URLSearchParams(window.location.search);
+    const enc=p.get('ujian'); if(!enc) return false;
+    const cfg=JSON.parse(decodeURIComponent(escape(atob(enc))));
+    if(!cfg||!cfg.aktif) return false;
+    state.aktif=true; state.gform=cfg.gform||''; state.kode=cfg.kode||'';
+    state.durasi=cfg.durasi||90; state.batas=cfg.batas||3; state.webhook=cfg.webhook||'';
+    return true;
+  }catch(e){return false;}
+}
+
+// ===================== UTILS =====================
+function showScreen(n){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+n).classList.add('active');
+}
+function showModal(id){ document.getElementById(id).classList.add('show'); }
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.style.opacity='1';
+  setTimeout(()=>{t.style.opacity='0';},3000);
+}
+
+// ===================== INIT =====================
+loadState();
+readUrl();
 </script>
 </body>
 </html>

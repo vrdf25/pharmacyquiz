@@ -824,6 +824,18 @@
           Bagikan kode ini ke mahasiswa
         </div>
       </div>
+
+      <div id="link-mhs-wrap" class="card" style="display:none;">
+        <div class="card-title">🔗 Link untuk Mahasiswa</div>
+        <div class="alert alert-success" style="margin-bottom:12px;">
+          Bagikan link ini ke mahasiswa. Mahasiswa tinggal buka link → login dengan NIM + kode ujian.
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <input type="text" id="link-mhs-input" readonly style="font-size:12px; font-family:'JetBrains Mono',monospace; background:#f4f6f9; flex:1;">
+          <button class="btn btn-primary" style="white-space:nowrap; flex-shrink:0;" onclick="copyLink()">📋 Salin</button>
+        </div>
+        <div class="text-sm text-muted mt-8">Mahasiswa tidak perlu login sebagai dosen — cukup buka link ini.</div>
+      </div>
     </div>
 
     <!-- TAB: Monitor -->
@@ -1106,6 +1118,10 @@ function loadDosenState() {
     document.getElementById('banner-kode').textContent = 'Kode: ' + state.kodeUjian;
     document.getElementById('kode-info-card').style.display = 'block';
     document.getElementById('kode-display-value').textContent = state.kodeUjian;
+    if (state.linkMahasiswa) {
+      document.getElementById('link-mhs-wrap').style.display = 'block';
+      document.getElementById('link-mhs-input').value = state.linkMahasiswa;
+    }
   }
 
   refreshMonitor();
@@ -1143,12 +1159,32 @@ function mulaiUjian() {
   state.violationLog = [];
   saveState();
 
+  // Generate link mahasiswa — semua config disimpan di URL
+  const cfg = {
+    aktif: 1,
+    kode: kode,
+    gform: gform,
+    durasi: durasi,
+    batas: batas,
+    webhook: webhook,
+  };
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(cfg))));
+  const baseUrl = window.location.href.split('?')[0].split('#')[0];
+  const linkMhs = baseUrl + '?ujian=' + encoded;
+
+  state.linkMahasiswa = linkMhs;
+  saveState();
+
   document.getElementById('ujian-active-banner').style.display = 'flex';
   document.getElementById('banner-kode').textContent = 'Kode: ' + kode;
   document.getElementById('kode-info-card').style.display = 'block';
   document.getElementById('kode-display-value').textContent = kode;
 
-  showToast('✅ Ujian berhasil diaktifkan! Kode: ' + kode);
+  // Tampilkan link mahasiswa
+  document.getElementById('link-mhs-wrap').style.display = 'block';
+  document.getElementById('link-mhs-input').value = linkMhs;
+
+  showToast('✅ Ujian aktif! Bagikan link ke mahasiswa.');
 }
 
 function confirmHentikan() {
@@ -1552,6 +1588,43 @@ function sendToWebhook(log) {
   }).catch(() => {});
 }
 
+function copyLink() {
+  const input = document.getElementById('link-mhs-input');
+  input.select();
+  input.setSelectionRange(0, 99999);
+  try {
+    navigator.clipboard.writeText(input.value).then(() => showToast('✅ Link disalin!'));
+  } catch(e) {
+    document.execCommand('copy');
+    showToast('✅ Link disalin!');
+  }
+}
+
+// Baca konfigurasi ujian dari URL parameter (untuk mahasiswa)
+function readUjianFromUrl() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const encoded = params.get('ujian');
+    if (!encoded) return false;
+    const cfg = JSON.parse(decodeURIComponent(escape(atob(encoded))));
+    if (!cfg || !cfg.aktif) return false;
+
+    // Inject config ke state agar mahasiswa bisa login
+    state.ujianAktif = true;
+    state.gformUrl = cfg.gform || '';
+    state.kodeUjian = cfg.kode || '';
+    state.durasi = cfg.durasi || 90;
+    state.batasViolation = cfg.batas || 3;
+    state.webhookUrl = cfg.webhook || '';
+
+    // Otomatis buka tab mahasiswa
+    switchLoginTab('mahasiswa');
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
 // ==================== UTILITIES ====================
 function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -1571,6 +1644,12 @@ function showToast(msg) {
 
 // ==================== INIT ====================
 loadState();
+const fromUrl = readUjianFromUrl();
+if (!fromUrl && state.ujianAktif && state.linkMahasiswa) {
+  // Pulihkan link di dashboard dosen setelah refresh
+  document.getElementById('link-mhs-wrap').style.display = 'block';
+  document.getElementById('link-mhs-input').value = state.linkMahasiswa;
+}
 </script>
 </body>
 </html>

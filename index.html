@@ -9,88 +9,140 @@
 
   :root {
     --primary: #1a3a5c;
+    --primary-light: #2c527a;
     --accent: #f0a052;
     --bg: #f4f6f9;
     --surface: #ffffff;
     --text: #1a2332;
     --text-muted: #6b7a90;
     --danger: #c0392b;
+    --shadow: 0 10px 30px rgba(0,0,0,0.1);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
 
-  /* NAVIGATION */
-  .screen { display: none; height: 100vh; width: 100%; flex-direction: column; }
+  body { 
+    font-family: 'Plus Jakarta Sans', sans-serif; 
+    background: var(--bg); 
+    color: var(--text); 
+    height: 100vh; 
+    width: 100vw;
+    overflow: hidden; 
+  }
+
+  /* WRAPPER UNTUK MEMASTIKAN SEMUA DI TENGAH */
+  .screen { 
+    display: none; 
+    height: 100vh; 
+    width: 100%; 
+    flex-direction: column;
+    align-items: center;    /* Tengah horizontal */
+    justify-content: center; /* Tengah vertikal */
+  }
+
   .screen.active { display: flex; }
 
-  /* LOGIN SCREEN */
-  #screen-login { 
+  /* BACKGROUND LOGIN KHUSUS */
+  #screen-mhs, #screen-login-admin { 
     background: linear-gradient(135deg, #0f2544 0%, #1a3a5c 100%); 
-    align-items: center; justify-content: center; padding: 20px; 
-  }
-  .admin-trigger { 
-    position: absolute; top: 20px; right: 20px; color: rgba(255,255,255,0.4); 
-    font-size: 11px; cursor: pointer; background: rgba(255,255,255,0.1); 
-    padding: 8px 15px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); 
   }
 
-  .login-card { 
-    background: #fff; border-radius: 20px; padding: 30px; width: 100%; max-width: 380px; 
-    box-shadow: 0 20px 40px rgba(0,0,0,0.3); text-align: center;
+  /* TOMBOL ADMIN DI POJOK KANAN ATAS */
+  .admin-trigger { 
+    position: fixed; 
+    top: 20px; 
+    right: 20px; 
+    color: #fff; 
+    font-size: 12px; 
+    cursor: pointer; 
+    background: rgba(255,255,255,0.2); 
+    padding: 10px 18px; 
+    border-radius: 30px; 
+    border: 1px solid rgba(255,255,255,0.3); 
+    z-index: 100;
+    font-weight: 700;
+    backdrop-filter: blur(5px);
+    transition: 0.3s;
   }
-  .brand { font-size: 32px; font-weight: 800; color: var(--primary); margin-bottom: 25px; }
+  .admin-trigger:hover { background: rgba(255,255,255,0.4); }
+
+  /* CARD LOGIN */
+  .login-card { 
+    background: #fff; 
+    border-radius: 24px; 
+    padding: 40px; 
+    width: 90%; 
+    max-width: 400px; 
+    box-shadow: 0 25px 50px rgba(0,0,0,0.4); 
+    text-align: center;
+  }
+
+  .brand { font-size: 36px; font-weight: 800; color: var(--primary); margin-bottom: 30px; }
   .brand span { color: var(--accent); }
 
   /* FORM ELEMENTS */
-  .form-group { text-align: left; margin-bottom: 15px; }
-  label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 5px; }
+  .form-group { text-align: left; margin-bottom: 20px; }
+  label { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 8px; letter-spacing: 1px; }
   input { 
-    width: 100%; padding: 12px; border: 1.5px solid #dde2ea; border-radius: 10px; 
-    font-size: 15px; outline: none; background: #f9f9f9;
+    width: 100%; padding: 14px; border: 2px solid #edf2f7; border-radius: 12px; 
+    font-size: 16px; outline: none; background: #f8fafc; transition: 0.3s;
   }
+  input:focus { border-color: var(--primary); background: #fff; }
+
   .btn { 
-    width: 100%; padding: 12px; border-radius: 10px; border: none; 
-    font-weight: 700; cursor: pointer; transition: 0.3s; margin-top: 10px;
+    width: 100%; padding: 15px; border-radius: 12px; border: none; 
+    font-weight: 800; cursor: pointer; transition: 0.3s; font-size: 15px;
   }
-  .btn-primary { background: var(--primary); color: #fff; }
-  .btn-secondary { background: #eee; color: var(--text); }
+  .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 12px rgba(26, 58, 92, 0.3); }
+  .btn-primary:hover { background: var(--primary-light); transform: translateY(-2px); }
+  .btn-secondary { background: #f1f5f9; color: var(--text); margin-top: 10px; }
 
   /* ADMIN DASHBOARD */
-  #screen-admin { background: #f4f6f9; overflow-y: auto; display: none; }
-  .admin-nav { background: var(--primary); color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
-  .admin-content { padding: 20px; max-width: 500px; margin: 0 auto; }
-  .card { background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
+  #screen-admin { background: #f4f6f9; justify-content: flex-start; overflow-y: auto; }
+  .admin-nav { 
+    width: 100%; 
+    background: var(--primary); 
+    color: #fff; 
+    padding: 20px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .admin-content { padding: 30px 20px; width: 100%; max-width: 600px; }
+  .card { background: #fff; padding: 25px; border-radius: 20px; box-shadow: var(--shadow); margin-bottom: 20px; }
 
   /* EXAM SCREEN */
-  #screen-ujian { background: #000; position: fixed; inset: 0; z-index: 9999; }
-  .topbar { background: #0f2040; height: 50px; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; color: #fff; }
-  .iframe-wrap { flex: 1; background: #fff; }
+  #screen-ujian { background: #000; position: fixed; inset: 0; z-index: 9999; justify-content: flex-start; }
+  .topbar { width: 100%; background: #0f2040; height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; color: #fff; }
+  .iframe-wrap { flex: 1; width: 100%; background: #fff; }
   iframe { width: 100%; height: 100%; border: none; }
 
   /* OVERLAYS */
   .overlay { 
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); 
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); 
     z-index: 10000; align-items: center; justify-content: center; padding: 20px;
   }
   .overlay.active { display: flex; }
-  .modal { background: #fff; padding: 25px; border-radius: 15px; text-align: center; max-width: 300px; }
+  .modal { background: #fff; padding: 30px; border-radius: 20px; text-align: center; max-width: 340px; width: 100%; }
 </style>
 </head>
 <body>
 
-<div class="admin-trigger" onclick="navTo('login-admin')">ADMIN MODE</div>
+<div class="admin-trigger" id="btn-admin-mode" onclick="navTo('login-admin')">ADMIN MODE</div>
 
 <div id="screen-mhs" class="screen active">
   <div class="login-card">
     <div class="brand">Quiz<span>Rx</span></div>
     <div class="form-group">
       <label>Nama Lengkap</label>
-      <input type="text" id="mhs-nama" placeholder="Sesuai Absen">
+      <input type="text" id="mhs-nama" placeholder="Sesuai Absensi">
     </div>
     <div class="form-group">
       <label>Kode Ujian</label>
-      <input type="text" id="mhs-kode" placeholder="Masukkan Kode">
+      <input type="text" id="mhs-kode" placeholder="Masukkan Kode" style="text-transform: uppercase;">
     </div>
     <button class="btn btn-primary" onclick="mulaiUjian()">MASUK UJIAN</button>
   </div>
@@ -98,61 +150,62 @@
 
 <div id="screen-login-admin" class="screen">
   <div class="login-card">
-    <h3 style="margin-bottom:20px">Dosen Login</h3>
+    <h3 style="margin-bottom:25px; color: var(--primary);">Dosen Access</h3>
     <div class="form-group">
-      <label>Password Admin</label>
+      <label>Password Khusus Admin</label>
       <input type="password" id="admin-pass" placeholder="Password: dosen123">
     </div>
-    <button class="btn btn-primary" onclick="cekAdmin()">LOGIN</button>
+    <button class="btn btn-primary" onclick="cekAdmin()">MASUK PANEL</button>
     <button class="btn btn-secondary" onclick="navTo('mhs')">KEMBALI</button>
   </div>
 </div>
 
 <div id="screen-admin" class="screen">
   <div class="admin-nav">
-    <div style="font-weight:700">Panel Dosen QuizRx</div>
-    <button onclick="location.reload()" style="background:none; border:1px solid #fff; color:#fff; padding:4px 8px; border-radius:5px">Keluar</button>
+    <div style="font-weight:800; font-size: 20px;">QuizRx <span>Dosen</span></div>
+    <button onclick="location.reload()" style="background:rgba(255,255,255,0.2); border:1px solid #fff; color:#fff; padding:6px 12px; border-radius:8px; cursor: pointer; font-weight: 700;">Logout</button>
   </div>
   <div class="admin-content">
     <div class="card">
-      <h4 style="margin-bottom:15px">Pengaturan Ujian</h4>
+      <h4 style="margin-bottom:20px; border-bottom: 2px solid #f4f6f9; padding-bottom: 10px;">Konfigurasi Soal</h4>
       <div class="form-group">
-        <label>Link Google Form</label>
+        <label>Link Google Form (Embed)</label>
         <input type="text" id="set-link" placeholder="https://docs.google.com/forms/...">
       </div>
       <div class="form-group">
-        <label>Kode Ujian Mahasiswa</label>
-        <input type="text" id="set-kode" placeholder="Contoh: RX-01">
+        <label>Kode Akses Mahasiswa</label>
+        <input type="text" id="set-kode" placeholder="Contoh: RX-FARMA">
       </div>
       <div class="form-group">
-        <label>Durasi (Menit)</label>
+        <label>Durasi Ujian (Menit)</label>
         <input type="number" id="set-waktu" value="60">
       </div>
-      <button class="btn btn-primary" onclick="saveConfig()">SIMPAN SETTING</button>
+      <button class="btn btn-primary" onclick="saveConfig()">UPDATE SISTEM</button>
     </div>
-    <p style="font-size:12px; color:gray; text-align:center">Semua perubahan akan langsung aktif untuk mahasiswa.</p>
+    <p style="font-size:12px; color:var(--text-muted); text-align:center">Data tersimpan otomatis di browser ini.</p>
   </div>
 </div>
 
 <div id="screen-ujian" class="screen">
   <div class="topbar">
-    <div id="timer" style="font-weight:700; color:var(--accent)">00:00</div>
-    <div id="display-nama" style="font-size:12px">MAHASISWA</div>
-    <button onclick="konfirmasiSelesai()" style="background:var(--danger); color:#fff; border:none; padding:4px 10px; border-radius:5px; font-weight:700">SELESAI</button>
+    <div id="timer" style="font-weight:800; color:var(--accent); font-size: 20px; font-family: monospace;">00:00</div>
+    <div id="display-nama" style="font-size:13px; font-weight: 700; letter-spacing: 1px;">MAHASISWA</div>
+    <button onclick="konfirmasiSelesai()" style="background:var(--danger); color:#fff; border:none; padding:8px 15px; border-radius:8px; font-weight:700; cursor: pointer;">SELESAI</button>
   </div>
   <div class="iframe-wrap" id="exam-container"></div>
 </div>
 
 <div id="modal-vio" class="overlay">
   <div class="modal">
+    <h1 style="font-size: 40px; margin-bottom: 10px;">⚠️</h1>
     <h2 style="color:var(--danger)">PERINGATAN!</h2>
-    <p id="vio-msg" style="margin:15px 0; font-size:14px">Jangan meninggalkan halaman ujian.</p>
+    <p id="vio-msg" style="margin:15px 0; font-size:14px; line-height: 1.5;">Terdeteksi keluar dari sistem ujian atau membuka aplikasi lain.</p>
     <button class="btn btn-primary" onclick="tutupVio()">SAYA MENGERTI</button>
   </div>
 </div>
 
 <script>
-// DATA DEFAULT (Tersimpan di Browser)
+// AMBIL DATA DARI LOCAL STORAGE
 let db = JSON.parse(localStorage.getItem('quiz_db')) || {
   link: "https://docs.google.com/forms/d/e/1FAIpQLSfsI_R-Vb_h-Z6l_X8uI-J9I5A-X-YV9S_S/viewform?embedded=true",
   kode: "QUIZ-RX",
@@ -162,13 +215,22 @@ let db = JSON.parse(localStorage.getItem('quiz_db')) || {
 let strike = 0;
 let isExam = false;
 
-// NAVIGASI ANTAR HALAMAN
+// NAVIGASI
 function navTo(id) {
+  // Sembunyikan semua screen
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  // Sembunyikan tombol admin mode jika sedang ujian atau sedang di panel admin
+  const adminBtn = document.getElementById('btn-admin-mode');
+  if(id === 'ujian' || id === 'admin') {
+    adminBtn.style.display = 'none';
+  } else {
+    adminBtn.style.display = 'block';
+  }
+  // Tampilkan screen tujuan
   document.getElementById('screen-' + id).classList.add('active');
 }
 
-// FUNGSI ADMIN
+// LOGIKA ADMIN
 function cekAdmin() {
   const pass = document.getElementById('admin-pass').value;
   if(pass === "dosen123") {
@@ -177,7 +239,7 @@ function cekAdmin() {
     document.getElementById('set-kode').value = db.kode;
     document.getElementById('set-waktu').value = db.waktu;
   } else {
-    alert("Password Salah!");
+    alert("Password Admin Salah!");
   }
 }
 
@@ -186,26 +248,27 @@ function saveConfig() {
   db.kode = document.getElementById('set-kode').value.toUpperCase();
   db.waktu = document.getElementById('set-waktu').value;
   localStorage.setItem('quiz_db', JSON.stringify(db));
-  alert("Data Berhasil Disimpan!");
+  alert("Pengaturan Berhasil Diperbarui!");
   navTo('mhs');
 }
 
-// FUNGSI MAHASISWA
+// LOGIKA MAHASISWA
 function mulaiUjian() {
-  const nama = document.getElementById('mhs-nama').value;
-  const kode = document.getElementById('mhs-kode').value.toUpperCase();
+  const nama = document.getElementById('mhs-nama').value.trim();
+  const kode = document.getElementById('mhs-kode').value.trim().toUpperCase();
 
-  if(!nama || !kode) return alert("Isi Nama dan Kode!");
-  if(kode !== db.kode) return alert("Kode Ujian Salah!");
+  if(!nama || !kode) return alert("Silakan isi Nama dan Kode Ujian!");
+  if(kode !== db.kode) return alert("Kode Ujian tidak terdaftar!");
 
   document.getElementById('display-nama').textContent = nama.toUpperCase();
   document.getElementById('exam-container').innerHTML = `<iframe src="${db.link}"></iframe>`;
   
   navTo('ujian');
   
-  // Fullscreen
+  // Masuk Fullscreen
   const el = document.documentElement;
   if(el.requestFullscreen) el.requestFullscreen();
+  else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
 
   isExam = true;
   startTimer(db.waktu);
@@ -220,18 +283,25 @@ function startTimer(min) {
     let m = Math.floor(sec / 60);
     let s = sec % 60;
     timerEl.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-    if(sec <= 0) { clearInterval(clock); alert("Waktu Habis!"); location.reload(); }
+    if(sec <= 0) { 
+        clearInterval(clock); 
+        alert("Waktu ujian telah berakhir!"); 
+        location.reload(); 
+    }
     sec--;
   }, 1000);
 }
 
 function startSecurity() {
+  // Deteksi jika mahasiswa pindah tab atau aplikasi
   window.onblur = () => {
     if(isExam) {
       strike++;
-      if(strike >= 3) { alert("Diskualifikasi! Anda keluar 3x."); location.reload(); }
-      else { 
-        document.getElementById('vio-msg').innerHTML = `Anda terdeteksi keluar ujian!<br>Peringatan: <b>${strike}/3</b>`;
+      if(strike >= 3) { 
+          alert("Anda dikeluarkan otomatis karena melakukan 3 pelanggaran."); 
+          location.reload(); 
+      } else { 
+        document.getElementById('vio-msg').innerHTML = `Jangan pindah tab atau membuka aplikasi lain!<br><br>Peringatan: <b style="color:red; font-size:20px">${strike}/3</b>`;
         document.getElementById('modal-vio').classList.add('active');
       }
     }
@@ -240,18 +310,24 @@ function startSecurity() {
 
 function tutupVio() {
   document.getElementById('modal-vio').classList.remove('active');
-  document.documentElement.requestFullscreen();
+  // Paksa balik fullscreen jika keluar
+  if(!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+  }
 }
 
 function konfirmasiSelesai() {
-  if(confirm("Pastikan sudah klik SUBMIT di Google Form. Yakin selesai?")) {
+  if(confirm("Pastikan Anda sudah menekan tombol 'Kirim/Submit' di dalam Google Form sebelum menekan OK.")) {
     isExam = false;
     location.reload();
   }
 }
 
-// Matikan Klik Kanan
-document.addEventListener('contextmenu', e => e.preventDefault());
+// Proteksi Tambahan
+document.addEventListener('contextmenu', e => e.preventDefault()); // Matikan klik kanan
+document.addEventListener('keydown', e => {
+    if(e.ctrlKey && (e.key === 'c' || e.key === 'v' || e.key === 'p')) e.preventDefault(); // Matikan copy-paste-print
+});
 </script>
 </body>
 </html>

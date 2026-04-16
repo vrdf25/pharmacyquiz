@@ -119,6 +119,35 @@
     -webkit-user-select:none;user-select:none;
   }
   .btn-selesai:active{background:#155a8a;}
+  /* FAB Selesai - di atas iframe, tidak bisa diblokir oleh iframe touch events */
+  .fab-selesai{
+    position:fixed;bottom:20px;right:20px;z-index:50000;
+    background:#1a7a4a;color:#fff;border:none;border-radius:50px;
+    padding:14px 22px;font-family:inherit;font-size:14px;font-weight:700;
+    cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,0.4),0 2px 6px rgba(0,0,0,0.3);
+    display:none;align-items:center;gap:6px;
+    -webkit-tap-highlight-color:rgba(255,255,255,0.2);
+    touch-action:manipulation;
+    -webkit-user-select:none;user-select:none;
+    transition:transform 0.15s,background 0.2s;
+  }
+  .fab-selesai.show{display:inline-flex;}
+  .fab-selesai:active{background:#155a3a;transform:scale(0.96);}
+  /* Timer floating - di atas iframe juga, biar tetap kelihatan */
+  .fab-timer{
+    position:fixed;bottom:20px;left:20px;z-index:50000;
+    font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;
+    padding:10px 16px;border-radius:50px;
+    background:rgba(15,32,64,0.92);color:#fff;
+    box-shadow:0 6px 20px rgba(0,0,0,0.4),0 2px 6px rgba(0,0,0,0.3);
+    display:none;align-items:center;gap:6px;
+    -webkit-user-select:none;user-select:none;
+    pointer-events:none;
+    transition:background 0.3s;
+  }
+  .fab-timer.show{display:inline-flex;}
+  .fab-timer.tw{background:rgba(192,57,43,0.92);color:#ffd6d0;}
+  .fab-timer.td{background:rgba(192,57,43,0.98);color:#fff;animation:pulsate 1s infinite;}
   .fs-bar{display:none;background:#c0392b;color:#fff;padding:10px 16px;align-items:center;justify-content:center;gap:12px;font-size:13px;flex-shrink:0;position:relative;z-index:20000;}
   .fs-bar.show{display:flex;}
   .btn-fs{background:#fff;color:#c0392b;border:none;border-radius:6px;padding:6px 14px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;}
@@ -334,6 +363,9 @@
     </iframe>
     <div class="watermark" id="wm-layer"></div>
   </div>
+  <!-- Floating timer & tombol Selesai - di luar iframe-wrap, tidak bisa diblokir touch event iframe -->
+  <div class="fab-timer" id="fab-timer">⏱ <span id="fab-timer-val">--:--</span></div>
+  <button class="fab-selesai" id="fab-selesai">✓ Selesai</button>
 </div>
 
 <!-- OV: Pelanggaran -->
@@ -598,10 +630,19 @@ function startUjian(){
 
   document.getElementById('exam-iframe').src=url;
 
-  // Pasang event tombol Selesai — touchend + click agar reliable di HP
-  const bs=document.getElementById("btn-selesai");
+  // Pasang event tombol Selesai (FAB) — touchend + click agar reliable di HP
+  // FAB ada di luar iframe-wrap, jadi touch event tidak bisa diblokir oleh iframe
+  const bs=document.getElementById("fab-selesai");
+  bs.classList.add('show');
   bs.ontouchend=function(e){e.preventDefault();e.stopPropagation();confirmSelesai();};
   bs.onclick=function(){confirmSelesai();};
+  // Tampilkan timer floating juga
+  document.getElementById('fab-timer').classList.add('show');
+
+  // Tombol Selesai lama di topbar tetap berfungsi sebagai fallback (kalau iframe tidak overlay topbar)
+  const bsOld=document.getElementById("btn-selesai");
+  bsOld.ontouchend=function(e){e.preventDefault();e.stopPropagation();confirmSelesai();};
+  bsOld.onclick=function(){confirmSelesai();};
 
   detecting=false; vioCooldown=false; fsCooldown=false;
   setTimeout(enterFs, 800);
@@ -650,10 +691,20 @@ function startTimer(){
 function updateTimer(){
   const el=document.getElementById('ujian-timer');
   const m=Math.floor(mhs.sisa/60); const s=mhs.sisa%60;
-  el.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  const txt=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  el.textContent=txt;
   el.className='ujian-timer';
   if(mhs.sisa<=60) el.classList.add('td');
   else if(mhs.sisa<=300) el.classList.add('tw');
+  // Update timer floating (FAB)
+  const fv=document.getElementById('fab-timer-val');
+  const ft=document.getElementById('fab-timer');
+  if(fv) fv.textContent=txt;
+  if(ft){
+    ft.classList.remove('tw','td');
+    if(mhs.sisa<=60) ft.classList.add('td');
+    else if(mhs.sisa<=300) ft.classList.add('tw');
+  }
 }
 
 // ===================== DETECTION =====================
@@ -768,6 +819,9 @@ function selesaiUjian(){ closeModal('modal-selesai'); endUjian('selesai'); }
 function endUjian(alasan){
   mhs.locked=true; detecting=false;
   clearInterval(mhs.timer); removeDetect();
+  // Sembunyikan FAB & timer floating
+  const fb=document.getElementById('fab-selesai'); if(fb) fb.classList.remove('show');
+  const ft=document.getElementById('fab-timer'); if(ft) ft.classList.remove('show');
   if(state.peserta[mhs.nama]){
     state.peserta[mhs.nama].status=alasan==='dikunci'?'dikunci':'selesai';
   }

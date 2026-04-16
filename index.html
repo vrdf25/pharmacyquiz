@@ -49,7 +49,7 @@
   .alert-info{background:#dbeafe;border-color:var(--primary-light);color:#1e3a5f;}
 
   /* MODAL */
-  .modal-bg{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:2000;align-items:center;justify-content:center;padding:20px;}
+  .modal-bg{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:9999999;align-items:center;justify-content:center;padding:20px;}
   .modal-bg.show{display:flex;}
   .modal{background:var(--surface);border-radius:16px;padding:28px;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
   .modal-title{font-size:18px;font-weight:700;margin-bottom:20px;color:var(--text);}
@@ -120,22 +120,24 @@
   }
   .btn-selesai:active{background:#155a8a;}
   /* FAB Selesai - di atas iframe, tidak bisa diblokir oleh iframe touch events */
+  /* z-index sangat tinggi (di atas overlay 99999) supaya selalu on top */
   .fab-selesai{
-    position:fixed;bottom:20px;right:20px;z-index:50000;
+    position:fixed;bottom:20px;right:20px;z-index:999999;
     background:#1a7a4a;color:#fff;border:none;border-radius:50px;
-    padding:14px 22px;font-family:inherit;font-size:14px;font-weight:700;
-    cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,0.4),0 2px 6px rgba(0,0,0,0.3);
+    padding:16px 24px;font-family:inherit;font-size:15px;font-weight:700;
+    cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,0.5),0 2px 6px rgba(0,0,0,0.4);
     display:none;align-items:center;gap:6px;
-    -webkit-tap-highlight-color:rgba(255,255,255,0.2);
+    -webkit-tap-highlight-color:rgba(255,255,255,0.3);
     touch-action:manipulation;
+    pointer-events:auto !important;
     -webkit-user-select:none;user-select:none;
     transition:transform 0.15s,background 0.2s;
   }
   .fab-selesai.show{display:inline-flex;}
-  .fab-selesai:active{background:#155a3a;transform:scale(0.96);}
+  .fab-selesai:active{background:#155a3a;transform:scale(0.94);}
   /* Timer floating - di atas iframe juga, biar tetap kelihatan */
   .fab-timer{
-    position:fixed;bottom:20px;left:20px;z-index:50000;
+    position:fixed;bottom:20px;left:20px;z-index:999998;
     font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;
     padding:10px 16px;border-radius:50px;
     background:rgba(15,32,64,0.92);color:#fff;
@@ -349,7 +351,6 @@
     </div>
     <div style="display:flex;align-items:center;gap:10px;">
       <div class="ujian-timer" id="ujian-timer">--:--</div>
-      <button class="btn-selesai" id="btn-selesai">✓ Selesai</button>
     </div>
   </div>
   <div class="fs-bar" id="fs-bar">
@@ -363,10 +364,13 @@
     </iframe>
     <div class="watermark" id="wm-layer"></div>
   </div>
-  <!-- Floating timer & tombol Selesai - di luar iframe-wrap, tidak bisa diblokir touch event iframe -->
-  <div class="fab-timer" id="fab-timer">⏱ <span id="fab-timer-val">--:--</span></div>
-  <button class="fab-selesai" id="fab-selesai">✓ Selesai</button>
 </div>
+
+<!-- Floating timer & tombol Selesai - di document level, BENAR-BENAR di luar screen-ujian -->
+<!-- Ini krusial: kalau FAB di dalam screen-ujian, dia bersebelahan dengan iframe-wrap dan masih bisa kena overlap. -->
+<!-- Di document level, FAB tidak punya parent stacking context yang bisa diklaim iframe. -->
+<div class="fab-timer" id="fab-timer">⏱ <span id="fab-timer-val">--:--</span></div>
+<button class="fab-selesai" id="fab-selesai" type="button">✓ Selesai</button>
 
 <!-- OV: Pelanggaran -->
 <div class="ov ov-viol" id="ov-viol">
@@ -413,12 +417,15 @@
 <!-- MODAL Selesai -->
 <div class="modal-bg" id="modal-selesai">
   <div class="modal">
-    <div class="modal-title">✅ Selesai Mengerjakan?</div>
-    <p class="text-sm text-muted" style="margin-bottom:8px;">Pastikan sudah klik <strong>Submit</strong> di Google Form sebelum keluar.</p>
-    <p class="text-sm text-muted">Setelah keluar, kamu <strong>tidak bisa kembali</strong>.</p>
+    <div class="modal-title">⚠️ Yakin Sudah Selesai?</div>
+    <div class="alert alert-warning" style="margin-bottom:12px;">
+      <strong>PENTING:</strong> Pastikan kamu sudah klik tombol <strong>"Submit"</strong> / <strong>"Kirim"</strong> di Google Form di atas.
+    </div>
+    <p class="text-sm text-muted" style="margin-bottom:8px;">Setelah keluar, kamu <strong>tidak bisa kembali</strong> ke ujian ini.</p>
+    <p class="text-sm text-muted">Jawaban yang belum di-submit akan <strong>hilang</strong>.</p>
     <div class="modal-actions">
-      <button class="btn btn-outline" onclick="batalSelesai()">Kembali ke Ujian</button>
-      <button class="btn btn-success" onclick="selesaiUjian()">Ya, Sudah Submit</button>
+      <button class="btn btn-outline" onclick="batalSelesai()">Belum, Kembali Dulu</button>
+      <button class="btn btn-success" onclick="selesaiUjian()">Ya, Saya Sudah Submit</button>
     </div>
   </div>
 </div>
@@ -630,19 +637,17 @@ function startUjian(){
 
   document.getElementById('exam-iframe').src=url;
 
-  // Pasang event tombol Selesai (FAB) — touchend + click agar reliable di HP
+  // Pasang event tombol Selesai (FAB) — touchstart agar reliable di HP
   // FAB ada di luar iframe-wrap, jadi touch event tidak bisa diblokir oleh iframe
   const bs=document.getElementById("fab-selesai");
   bs.classList.add('show');
-  bs.ontouchend=function(e){e.preventDefault();e.stopPropagation();confirmSelesai();};
-  bs.onclick=function(){confirmSelesai();};
+  // touchstart dipakai (bukan touchend) supaya tidak ke-cancel oleh iframe scroll/touch handling
+  bs.addEventListener('touchstart',function(e){
+    e.preventDefault(); e.stopPropagation(); confirmSelesai();
+  },{passive:false});
+  bs.onclick=function(e){ e.preventDefault(); e.stopPropagation(); confirmSelesai(); };
   // Tampilkan timer floating juga
   document.getElementById('fab-timer').classList.add('show');
-
-  // Tombol Selesai lama di topbar tetap berfungsi sebagai fallback (kalau iframe tidak overlay topbar)
-  const bsOld=document.getElementById("btn-selesai");
-  bsOld.ontouchend=function(e){e.preventDefault();e.stopPropagation();confirmSelesai();};
-  bsOld.onclick=function(){confirmSelesai();};
 
   detecting=false; vioCooldown=false; fsCooldown=false;
   setTimeout(enterFs, 800);
@@ -814,7 +819,20 @@ function batalSelesai(){
   detecting=true; enterFs();
 }
 
-function selesaiUjian(){ closeModal('modal-selesai'); endUjian('selesai'); }
+function selesaiUjian(){
+  closeModal('modal-selesai');
+  // Tutup ujian: bersihkan state mhs, simpan status, lalu langsung balik ke halaman login
+  mhs.locked=true; detecting=false;
+  clearInterval(mhs.timer); removeDetect();
+  const fb=document.getElementById('fab-selesai'); if(fb) fb.classList.remove('show');
+  const ft=document.getElementById('fab-timer'); if(ft) ft.classList.remove('show');
+  if(state.peserta[mhs.nama]) state.peserta[mhs.nama].status='selesai';
+  saveState();
+  if(document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+  else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
+  // Redirect ke halaman depan (tanpa query param ujian)
+  window.location.href=window.location.href.split('?')[0];
+}
 
 function endUjian(alasan){
   mhs.locked=true; detecting=false;

@@ -441,6 +441,7 @@ let state = {
 };
 let mhs = { nama:'', vio:0, timer:null, sisa:0, locked:false };
 let detecting=false, vioCooldown=false, fsCooldown=false, lastW=window.innerWidth;
+let statusPoll=null; // interval ID untuk polling status ujian dari webhook
 
 function loadState(){
   try{
@@ -479,6 +480,36 @@ function mahasiswaLogin(){
     showErr(err,'Akun kamu dikunci karena pelanggaran. Hubungi dosen.'); return;
   }
   err.style.display='none';
+
+  // Cek ke server: apakah ujian masih aktif? (Bisa jadi dosen sudah hentikan sebelum mhs login)
+  // Kalau webhook nggak di-set, skip aja — fallback ke behavior lama.
+  if(state.webhook){
+    showErr(err,'⏳ Memeriksa status ujian...');
+    err.classList.remove('alert-danger'); err.classList.add('alert-info');
+    const url=state.webhook+'?kode='+encodeURIComponent(kode)+'&_t='+Date.now();
+    fetch(url,{method:'GET'})
+      .then(r=>r.json())
+      .then(data=>{
+        err.classList.remove('alert-info'); err.classList.add('alert-danger');
+        if(data&&data.status==='stopped'){
+          showErr(err,'❌ Ujian sudah dihentikan oleh dosen.');
+          return;
+        }
+        // Lanjut masuk ujian
+        proceedLogin(nama);
+      })
+      .catch(()=>{
+        // Gagal konek ke server — tetap lanjut (jangan blok mahasiswa gara-gara internet ngadat)
+        err.classList.remove('alert-info'); err.classList.add('alert-danger');
+        err.style.display='none';
+        proceedLogin(nama);
+      });
+  } else {
+    proceedLogin(nama);
+  }
+}
+
+function proceedLogin(nama){
   if(!state.peserta[nama]) state.peserta[nama]={vio:[],status:'aktif',t:new Date().toISOString()};
   else state.peserta[nama].status='aktif';
   saveState();
@@ -547,11 +578,20 @@ function hentikanUjian(){
   state.aktif=false;
   Object.keys(state.peserta).forEach(n=>{ if(state.peserta[n].status==='aktif') state.peserta[n].status='selesai'; });
   saveState();
+  // Kirim sinyal STOP ke webhook supaya mahasiswa di device lain juga ter-kick
+  sendStopSignal();
   document.getElementById('ujian-banner').style.display='none';
   document.getElementById('kode-card').style.display='none';
   document.getElementById('link-card').style.display='none';
   closeModal('modal-hentikan');
-  showToast('🛑 Ujian dihentikan.');
+  showToast('🛑 Ujian dihentikan. Peserta akan ter-kick dalam 10 detik.');
+}
+
+function sendStopSignal(){
+  if(!state.webhook) return;
+  fetch(state.webhook,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action:'stop',kode:state.kode,waktu:new Date().toLocaleString('id-ID')})
+  }).catch(()=>{});
 }
 
 function refreshMonitor(){
@@ -655,6 +695,48 @@ function startUjian(){
 
   setupDetect();
   startTimer();
+  startStatusPoll(); // mulai cek status ujian dari server tiap 10 detik
+}
+
+// Polling: cek status ujian dari webhook tiap 10 detik
+// Kalau dosen sudah hentikan ujian, mahasiswa otomatis ter-kick keluar
+function startStatusPoll(){
+  if(!state.webhook) return; // skip kalau dosen nggak set webhook
+  if(statusPoll) clearInterval(statusPoll);
+  statusPoll=setInterval(checkUjianStatus, 10000); // cek tiap 10 detik
+}
+
+function stopStatusPoll(){
+  if(statusPoll){ clearInterval(statusPoll); statusPoll=null; }
+}
+
+function checkUjianStatus(){
+  if(mhs.locked||!state.webhook||!state.kode) return;
+  // Pakai GET dengan query param. Apps Script doGet() yang akan handle.
+  const url=state.webhook+'?kode='+encodeURIComponent(state.kode)+'&_t='+Date.now();
+  fetch(url,{method:'GET'})
+    .then(r=>r.json())
+    .then(data=>{
+      if(data&&data.status==='stopped'){
+        // Dosen menghentikan ujian dari device lain → kick mahasiswa
+        kickedByDosen();
+      }
+    })
+    .catch(()=>{ /* gagal fetch (network error / CORS) — biarkan, coba lagi tick berikutnya */ });
+}
+
+function kickedByDosen(){
+  mhs.locked=true; detecting=false;
+  clearInterval(mhs.timer); stopStatusPoll(); removeDetect();
+  const fb=document.getElementById('fab-selesai'); if(fb) fb.classList.remove('show');
+  const ft=document.getElementById('fab-timer'); if(ft) ft.classList.remove('show');
+  if(document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+  else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
+  // Tampilkan pesan dikunci, lalu auto-redirect setelah 4 detik
+  document.getElementById('lock-title').textContent='🛑 Ujian Dihentikan Dosen';
+  document.getElementById('lock-desc').textContent='Dosen telah menghentikan ujian ini. Kamu akan dialihkan ke halaman utama.';
+  document.getElementById('ov-lock').classList.add('show');
+  setTimeout(()=>{ window.location.href=window.location.href.split('?')[0]; }, 4000);
 }
 
 function renderWm(){
@@ -823,7 +905,7 @@ function selesaiUjian(){
   closeModal('modal-selesai');
   // Tutup ujian: bersihkan state mhs, simpan status, lalu langsung balik ke halaman login
   mhs.locked=true; detecting=false;
-  clearInterval(mhs.timer); removeDetect();
+  clearInterval(mhs.timer); stopStatusPoll(); removeDetect();
   const fb=document.getElementById('fab-selesai'); if(fb) fb.classList.remove('show');
   const ft=document.getElementById('fab-timer'); if(ft) ft.classList.remove('show');
   if(state.peserta[mhs.nama]) state.peserta[mhs.nama].status='selesai';
@@ -836,7 +918,7 @@ function selesaiUjian(){
 
 function endUjian(alasan){
   mhs.locked=true; detecting=false;
-  clearInterval(mhs.timer); removeDetect();
+  clearInterval(mhs.timer); stopStatusPoll(); removeDetect();
   // Sembunyikan FAB & timer floating
   const fb=document.getElementById('fab-selesai'); if(fb) fb.classList.remove('show');
   const ft=document.getElementById('fab-timer'); if(ft) ft.classList.remove('show');

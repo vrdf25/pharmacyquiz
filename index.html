@@ -175,6 +175,23 @@
   .ov-stats-val{font-size:22px;font-weight:700;color:#fff;}
 
   #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a2332;color:#fff;padding:12px 20px;border-radius:8px;font-size:14px;z-index:999999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;}
+
+  /* Loading overlay saat Google Form belum selesai load */
+  .loading-overlay{
+    position:absolute;top:0;left:0;right:0;bottom:0;z-index:10;
+    background:#0a1628;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:16px;
+    transition:opacity 0.4s;
+  }
+  .loading-overlay.hide{opacity:0;pointer-events:none;}
+  .loading-spinner{
+    width:40px;height:40px;border:4px solid rgba(255,255,255,0.15);
+    border-top-color:#f0a052;border-radius:50%;
+    animation:spin 0.8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-text{color:rgba(255,255,255,0.7);font-size:14px;font-weight:500;}
+  .loading-sub{color:rgba(255,255,255,0.35);font-size:12px;}
 </style>
 </head>
 <body>
@@ -359,6 +376,11 @@
     <button class="btn-fs" onclick="enterFs()">Aktifkan Kembali</button>
   </div>
   <div class="iframe-wrap">
+    <div class="loading-overlay" id="loading-overlay">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Memuat soal ujian...</div>
+      <div class="loading-sub">Timer dimulai setelah soal tampil</div>
+    </div>
     <iframe id="exam-iframe"
       allow="autoplay"
       sandbox="allow-forms allow-same-origin allow-scripts allow-popups allow-top-navigation-by-user-activation">
@@ -685,6 +707,40 @@ function startUjian(){
 
   document.getElementById('exam-iframe').src=url;
 
+  // Tampilkan loading overlay & sembunyikan timer floating dulu
+  const loadingOv=document.getElementById('loading-overlay');
+  loadingOv.classList.remove('hide');
+  const fabTimerEl=document.getElementById('fab-timer');
+
+  // Timer, deteksi, dan FAB timer BARU MULAI setelah Google Form selesai load
+  const iframe=document.getElementById('exam-iframe');
+  iframe.onload=function(){
+    // Sembunyikan loading
+    loadingOv.classList.add('hide');
+    setTimeout(()=>{ loadingOv.style.display='none'; }, 500);
+    // Sekarang baru mulai timer & deteksi
+    fabTimerEl.classList.add('show');
+    startTimer();
+    setupDetect();
+    startStatusPoll();
+    setTimeout(enterFs, 500);
+    setTimeout(()=>{ detecting=true; lastW=window.innerWidth; }, 3000);
+  };
+
+  // Safety: kalau iframe nggak fire onload dalam 30 detik (error load), mulai aja
+  setTimeout(()=>{
+    if(!mhs.timer){
+      loadingOv.classList.add('hide');
+      setTimeout(()=>{ loadingOv.style.display='none'; }, 500);
+      fabTimerEl.classList.add('show');
+      startTimer();
+      setupDetect();
+      startStatusPoll();
+      setTimeout(enterFs, 500);
+      setTimeout(()=>{ detecting=true; lastW=window.innerWidth; }, 3000);
+    }
+  }, 30000);
+
   // Pasang event tombol Selesai (FAB) — touchstart agar reliable di HP
   // FAB ada di luar iframe-wrap, jadi touch event tidak bisa diblokir oleh iframe
   const bs=document.getElementById("fab-selesai");
@@ -694,16 +750,8 @@ function startUjian(){
     e.preventDefault(); e.stopPropagation(); confirmSelesai();
   },{passive:false});
   bs.onclick=function(e){ e.preventDefault(); e.stopPropagation(); confirmSelesai(); };
-  // Tampilkan timer floating juga
-  document.getElementById('fab-timer').classList.add('show');
 
   detecting=false; vioCooldown=false; fsCooldown=false;
-  setTimeout(enterFs, 800);
-  setTimeout(()=>{ detecting=true; lastW=window.innerWidth; }, 5000);
-
-  setupDetect();
-  startTimer();
-  startStatusPoll(); // mulai cek status ujian dari server tiap 10 detik
 }
 
 // Polling: cek status ujian dari webhook tiap 10 detik

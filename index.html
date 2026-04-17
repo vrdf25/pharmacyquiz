@@ -182,7 +182,7 @@
 <!-- LOGIN -->
 <div id="screen-login" class="screen active">
   <div class="dosen-corner">
-    <button onclick="showModal('modal-dosen-login')">Dosen / Admin</button>
+    <button onclick="showModal('modal-dosen-login')">Login</button>
   </div>
   <div class="login-logo">
     <div class="brand-text">Quiz<span class="rx">Rx</span></div>
@@ -201,6 +201,7 @@
     <div id="mhs-err" class="alert alert-danger" style="display:none;"></div>
     <button class="btn btn-primary" onclick="mahasiswaLogin()">Mulai Ujian →</button>
   </div>
+  <div style="position:absolute;bottom:16px;left:0;right:0;text-align:center;font-size:12px;color:rgba(255,255,255,0.25);letter-spacing:2px;font-weight:500;">rfdrv</div>
 </div>
 
 <!-- MODAL DOSEN LOGIN -->
@@ -481,8 +482,7 @@ function mahasiswaLogin(){
   }
   err.style.display='none';
 
-  // Cek ke server: apakah ujian masih aktif? (Bisa jadi dosen sudah hentikan sebelum mhs login)
-  // Kalau webhook nggak di-set, skip aja — fallback ke behavior lama.
+  // Cek ke server: apakah ujian masih aktif?
   if(state.webhook){
     showErr(err,'⏳ Memeriksa status ujian...');
     err.classList.remove('alert-danger'); err.classList.add('alert-info');
@@ -495,11 +495,9 @@ function mahasiswaLogin(){
           showErr(err,'❌ Ujian sudah dihentikan oleh dosen.');
           return;
         }
-        // Lanjut masuk ujian
         proceedLogin(nama);
       })
       .catch(()=>{
-        // Gagal konek ke server — tetap lanjut (jangan blok mahasiswa gara-gara internet ngadat)
         err.classList.remove('alert-info'); err.classList.add('alert-danger');
         err.style.display='none';
         proceedLogin(nama);

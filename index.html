@@ -565,6 +565,9 @@ function mulaiUjian(){
   const base=window.location.href.split('?')[0].split('#')[0];
   state.link=base+'?ujian='+enc;
   saveState();
+  // Kirim sinyal ACTIVE ke webhook supaya status di Google Sheets di-reset
+  // (menghapus status 'stopped' dari ujian sebelumnya dengan kode yang sama)
+  sendActiveSignal(kode, webhook);
   document.getElementById('ujian-banner').style.display='flex';
   document.getElementById('banner-kode').textContent='Kode: '+kode;
   document.getElementById('kode-card').style.display='block';
@@ -591,6 +594,13 @@ function sendStopSignal(){
   if(!state.webhook) return;
   fetch(state.webhook,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({action:'stop',kode:state.kode,waktu:new Date().toLocaleString('id-ID')})
+  }).catch(()=>{});
+}
+
+function sendActiveSignal(kode, webhook){
+  if(!webhook) return;
+  fetch(webhook,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action:'activate',kode:kode,waktu:new Date().toLocaleString('id-ID')})
   }).catch(()=>{});
 }
 

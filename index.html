@@ -480,13 +480,14 @@ function dosenLogin(){
     err.style.display='none';
     closeModal('modal-dosen-login');
     document.getElementById('d-username').textContent=u;
+    localStorage.setItem('qrx_dosen','1');
     showScreen('dosen');
     loadDashboard();
   } else {
     err.style.display='block'; err.textContent='Username atau password salah.';
   }
 }
-function dosenLogout(){ showScreen('login'); }
+function dosenLogout(){ localStorage.removeItem('qrx_dosen'); showScreen('login'); }
 
 function mahasiswaLogin(){
   const nama=document.getElementById('mhs-nama').value.trim();
@@ -496,19 +497,32 @@ function mahasiswaLogin(){
   if(!kode){ showErr(err,'Kode ujian tidak boleh kosong.'); return; }
   if(!state.aktif){ showErr(err,'Tidak ada ujian aktif saat ini. Hubungi dosen.'); return; }
   if(kode!==state.kode){ showErr(err,'Kode ujian salah. Periksa kembali.'); return; }
-  if(state.peserta[nama]&&state.peserta[nama].status==='dikunci'){
-    showErr(err,'Akun kamu dikunci karena pelanggaran. Hubungi dosen.'); return;
-  }
   err.style.display='none';
 
-  // Cek ke server: apakah ujian masih aktif?
+  // Cek ke server: status ujian + status peserta (dikunci atau belum)
   if(state.webhook){
     showErr(err,'⏳ Memeriksa status ujian...');
     err.classList.remove('alert-danger'); err.classList.add('alert-info');
-    const url=state.webhook+'?kode='+encodeURIComponent(kode)+'&_t='+Date.now();
+    const url=state.webhook+'?action=peserta&kode='+encodeURIComponent(kode)+'&_t='+Date.now();
     fetch(url,{method:'GET'})
       .then(r=>r.json())
       .then(data=>{
+        err.classList.remove('alert-info'); err.classList.add('alert-danger');
+        // Cek apakah ujian sudah dihentikan
+        if(data&&data.peserta){
+          // Cek status peserta di server
+          const me=data.peserta.find(p=>p.nama.trim()===nama.trim());
+          if(me&&me.status==='dikunci'){
+            showErr(err,'🔒 Akun kamu dikunci karena pelanggaran. Hubungi dosen.');
+            return;
+          }
+        }
+        // Cek status ujian juga
+        const urlStatus=state.webhook+'?kode='+encodeURIComponent(kode)+'&_t='+Date.now();
+        return fetch(urlStatus,{method:'GET'}).then(r=>r.json());
+      })
+      .then(data=>{
+        if(!data) return; // sudah di-return karena dikunci
         err.classList.remove('alert-info'); err.classList.add('alert-danger');
         if(data&&data.status==='stopped'){
           showErr(err,'❌ Ujian sudah dihentikan oleh dosen.');
@@ -519,9 +533,19 @@ function mahasiswaLogin(){
       .catch(()=>{
         err.classList.remove('alert-info'); err.classList.add('alert-danger');
         err.style.display='none';
+        // Fallback: cek local
+        if(state.peserta[nama]&&state.peserta[nama].status==='dikunci'){
+          showErr(err,'🔒 Akun kamu dikunci karena pelanggaran. Hubungi dosen.');
+          return;
+        }
         proceedLogin(nama);
       });
   } else {
+    // Tanpa webhook: cek local aja
+    if(state.peserta[nama]&&state.peserta[nama].status==='dikunci'){
+      showErr(err,'🔒 Akun kamu dikunci karena pelanggaran. Hubungi dosen.');
+      return;
+    }
     proceedLogin(nama);
   }
 }
@@ -659,8 +683,21 @@ function renderMonitorData(peserta, logs){
   c.innerHTML='<div class="mhs-list">'+peserta.map(p=>{
     const vc=vioPer[p.nama]||0;
     const badge=p.status==='aktif'?'<span class="badge badge-active">● Aktif</span>':p.status==='dikunci'?'<span class="badge badge-inactive">🔒 Dikunci</span>':'<span class="badge badge-done">✓ Selesai</span>';
-    return `<div class="mhs-item"><div><div class="mhs-nama">${p.nama}</div><div>${badge}</div></div><span class="vcount">${vc}x pelanggaran</span></div>`;
+    const unlockBtn=p.status==='dikunci'?` <button class="btn btn-sm btn-outline" style="margin-left:8px;font-size:11px;padding:4px 10px;" onclick="unlockPeserta('${p.nama.replace(/'/g,"\\'")}')">🔓 Buka Kunci</button>`:'';
+    return `<div class="mhs-item"><div><div class="mhs-nama">${p.nama}${unlockBtn}</div><div>${badge}</div></div><span class="vcount">${vc}x pelanggaran</span></div>`;
   }).join('')+'</div>';
+}
+
+function unlockPeserta(nama){
+  if(!confirm('Buka kunci untuk '+nama+'? Mahasiswa akan bisa login lagi.')) return;
+  // Update di local state
+  if(state.peserta[nama]) state.peserta[nama].status='aktif';
+  saveState();
+  // Kirim ke webhook supaya Sheet juga ke-update
+  sendSignal('unlock',nama,'aktif');
+  showToast('🔓 '+nama+' berhasil dibuka kuncinya.');
+  // Refresh monitor setelah 1 detik (kasih waktu webhook sampai)
+  setTimeout(refreshMonitor, 1500);
 }
 
 function renderLogFromServer(logs){
@@ -689,7 +726,8 @@ function refreshMonitorLocal(){
   c.innerHTML='<div class="mhs-list">'+ns.map(n=>{
     const pp=p[n]; const vc=(pp.vio||[]).length;
     const badge=pp.status==='aktif'?'<span class="badge badge-active">● Aktif</span>':pp.status==='dikunci'?'<span class="badge badge-inactive">🔒 Dikunci</span>':'<span class="badge badge-done">✓ Selesai</span>';
-    return `<div class="mhs-item"><div><div class="mhs-nama">${n}</div><div>${badge}</div></div><span class="vcount">${vc}x pelanggaran</span></div>`;
+    const unlockBtn=pp.status==='dikunci'?` <button class="btn btn-sm btn-outline" style="margin-left:8px;font-size:11px;padding:4px 10px;" onclick="unlockPeserta('${n.replace(/'/g,"\\'")}')">🔓 Buka Kunci</button>`:'';
+    return `<div class="mhs-item"><div><div class="mhs-nama">${n}${unlockBtn}</div><div>${badge}</div></div><span class="vcount">${vc}x pelanggaran</span></div>`;
   }).join('')+'</div>';
 }
 
@@ -1089,7 +1127,14 @@ function showToast(msg){
 
 // ===================== INIT =====================
 loadState();
-readUrl();
+if(!readUrl()){
+  // Tidak ada parameter ujian di URL — cek apakah dosen sudah login sebelumnya
+  if(localStorage.getItem('qrx_dosen')==='1'){
+    document.getElementById('d-username').textContent=creds.u;
+    showScreen('dosen');
+    loadDashboard();
+  }
+}
 </script>
 </body>
 </html>
